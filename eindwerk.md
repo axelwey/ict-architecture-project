@@ -201,10 +201,6 @@ overige componenten schalen minder intensief mee omdat ze niet per
 actieve sessie belast worden.
 
 # ADR Architecturale Stijl
-
-- **Title:** 001: Keuze van architecturale stijl
-- **Status:** Accepted
-
 ## Context
 
 Het platform laat gebruikers toe echte exploits en aanvalscode uit
@@ -343,9 +339,6 @@ haalbare weg is.
 
 ## ADR 002: Communicatie tussen services
 
-- **Title:** 002: Synchrone vs. asynchrone communicatie tussen services
-- **Status:** Accepted
-
 ### Context
 
 De microservices uit sectie 3 moeten met elkaar communiceren.
@@ -413,18 +406,9 @@ code review gecontroleerd of de keuze synchroon/asynchroon
 gemotiveerd is. Nieuwe asynchrone verbindingen worden
 gedocumenteerd in een berichtenoverzicht.
 
-### Notes
-
-Gebaseerd op de Two Many Sneakers case uit de les: queues
-versus directe web service calls als afweging voor
-communicatie tussen diensten.
-
 ---
 
 ## ADR 003: Data ownership per service
-
-- **Title:** 003: Elke service beheert zijn eigen dataschema
-- **Status:** Accepted
 
 ### Context
 
@@ -484,18 +468,9 @@ een tabel van een andere service aanroept. Dit wordt ook
 bewaakt via netwerkconfiguratie: services krijgen enkel
 toegang tot hun eigen schema.
 
-### Notes
-
-Gebaseerd op het data ownership diagram uit de les
-"Microservices" (StayHealthy, Inc. case): "wijzigingen aan
-het schema van service A mogen service B niet raken".
-
 ---
 
 ## ADR 004: Isolatie van sandbox-omgevingen
-
-- **Title:** 004: Technische isolatie van uitvoerbare oefenomgevingen
-- **Status:** Accepted
 
 ### Context
 
@@ -560,20 +535,9 @@ Provisioner vereist expliciete goedkeuring via code review.
 De configuratie wordt bijgehouden in versiebeheer. Er worden
 geen privileged containers toegestaan zonder een nieuwe ADR.
 
-### Notes
-
-De POC voor sandbox-isolatie (poc-1) demonstreert de technische
-haalbaarheid van deze beslissing. Containerisolatie is een
-architecturale beslissing met rechtstreekse impact op de
-driving characteristics security en fault tolerance uit
-sectie 1.
-
 ---
 
 ## ADR 005: Authenticatie en autorisatie
-
-- **Title:** 005: Centrale authenticatieservice vs. gedistribueerde aanpak
-- **Status:** Accepted
 
 ### Context
 
