@@ -202,7 +202,11 @@ De gekozen opdeling volgt de natuurlijke scheiding tussen toegang, leerinformati
 
 De studentflow en de beheerderflow tonen bovendien dat inhoudelijk beheer, uitvoering van challengecode en toegangscontrole niet in éénzelfde component thuishoren. Door die verantwoordelijkheden te scheiden ontstaat een duidelijker en beter verdedigbaar logisch model van het platform.
 
-# ADR Architecturale Stijl
+# ADR Architecturale beslissingen
+
+## Title: ADR 001: Keuze van architecturale stijl
+## Status: Proposed
+
 ## Context
 
 Het platform laat gebruikers toe echte exploits en aanvalscode uit
@@ -337,11 +341,10 @@ complexiteit significant lager is en een latere migratie naar
 microservices vanuit een modulaire monoliet een gekende en
 haalbare weg is.
 
-# Verdere architecturale beslissingen
+## Title: ADR 002: Communicatie tussen services
+## Status: Proposed
 
-## ADR 002: Communicatie tussen services
-
-### Context
+## Context
 
 De microservices uit sectie 3 moeten met elkaar communiceren.
 Er zijn twee fundamentele opties: synchrone communicatie via
@@ -362,7 +365,7 @@ sectie 2 zijn niet allemaal van hetzelfde type:
   => andere services hoeven hier niet op te wachten maar
   moeten wel verwittigd worden
 
-### Decision
+## Decision
 
 **We gebruiken synchrone communicatie (REST over HTTP) voor
 tijdskritische interacties en asynchrone communicatie via een
@@ -384,7 +387,7 @@ centraliseert. Bij een kleiner team zou volledig synchrone
 communicatie eenvoudiger te beheren zijn, maar dit gaat ten
 koste van fault tolerance.
 
-### Consequences
+## Consequences
 
 **Wat wordt mogelijk:**
 - Services zijn niet geblokkeerd op trage of falende
@@ -401,18 +404,21 @@ koste van fault tolerance.
 - Eventual consistency moet bewust worden aanvaard voor
   de Progress Tracker
 
-### Governance
+## Governance
 
 Bij elke nieuwe communicatielijn tussen services wordt in
 code review gecontroleerd of de keuze synchroon/asynchroon
 gemotiveerd is. Nieuwe asynchrone verbindingen worden
 gedocumenteerd in een berichtenoverzicht.
 
----
+## Notes
 
-## ADR 003: Data ownership per service
+Tekst
 
-### Context
+## Title: ADR 003: Data ownership per service
+## Status: Proposed
+
+## Context
 
 In een microservices-architectuur is het verleidelijk om één
 centrale databank te delen tussen alle services. Dit vereenvoudigt
@@ -424,7 +430,7 @@ De logische componenten uit sectie 2 hebben elk een duidelijk
 afgebakend domein. De vraag is of ze een gedeelde databank
 gebruiken of elk hun eigen schema beheren.
 
-### Decision
+## Decision
 
 **Elke service beheert zijn eigen dataschema. Geen enkele service
 leest rechtstreeks uit het schema van een andere service.**
@@ -447,7 +453,7 @@ fysieke database-instantie krijgen. Met het huidige team en
 budget zijn gescheiden schema's op één server een aanvaardbaar
 compromis.
 
-### Consequences
+## Consequences
 
 **Wat wordt mogelijk:**
 - Een service kan zijn schema wijzigen zonder andere services
@@ -463,18 +469,21 @@ compromis.
   User Management)
 - Eventual consistency bij asynchrone updates
 
-### Governance
+## Governance
 
 Code review controleert dat geen enkele service rechtstreeks
 een tabel van een andere service aanroept. Dit wordt ook
 bewaakt via netwerkconfiguratie: services krijgen enkel
 toegang tot hun eigen schema.
 
----
+## Notes
 
-## ADR 004: Isolatie van sandbox-omgevingen
+Tekst
 
-### Context
+## Title: ADR 004: Isolatie van sandbox-omgevingen
+## Status: Proposed
+
+## Context
 
 Gebruikers voeren echte exploits en aanvalscode uit op het
 platform. De Sandbox Provisioner moet garanderen dat een
@@ -490,7 +499,7 @@ Er zijn drie mogelijke benaderingen:
 - **VM-isolatie**: de omgeving draait in een volledige
   virtuele machine
 
-### Decision
+## Decision
 
 **Sandbox-omgevingen worden geïsoleerd via Docker containers,
 aangestuurd door de Sandbox Provisioner.**
@@ -514,7 +523,7 @@ de voorkeur krijgen omdat de isolatiegaranties sterker zijn.
 Bij een kleiner team en budget is containerisolatie met
 strikte configuratie de meest haalbare keuze.
 
-### Consequences
+## Consequences
 
 **Wat wordt mogelijk:**
 - Elke gebruikerssessie is volledig geïsoleerd
@@ -530,18 +539,21 @@ strikte configuratie de meest haalbare keuze.
   niet correct is: dit vereist security-review
 - Het hostbesturingssysteem moet gehard worden
 
-### Governance
+## Governance
 
 Elke aanpassing aan de container-configuratie van de Sandbox
 Provisioner vereist expliciete goedkeuring via code review.
 De configuratie wordt bijgehouden in versiebeheer. Er worden
 geen privileged containers toegestaan zonder een nieuwe ADR.
 
----
+## Notes
 
-## ADR 005: Authenticatie en autorisatie
+Tekst
 
-### Context
+## Title: ADR 005: Authenticatie en autorisatie
+## Status: Proposed
+
+## Context
 
 Het platform heeft meerdere soorten gebruikers met verschillende
 rechten: studenten kunnen challenges uitvoeren, instructors
@@ -555,7 +567,7 @@ Er zijn twee benaderingen:
 - **Centraal**: één dedicated service handelt authenticatie af
   en geeft tokens uit die andere services kunnen verifiëren
 
-### Decision
+## Decision
 
 **We voorzien een centrale authenticatieservice die tokens
 uitgeeft via een standaard mechanisme (JWT). Elke service
@@ -579,7 +591,7 @@ in plaats van een zelfgebouwde authenticatieservice. Met het
 huidige team is een eenvoudige JWT-gebaseerde implementatie
 haalbaar en onderhoudbaar.
 
-### Consequences
+## Consequences
 
 **Wat wordt mogelijk:**
 - Geen single point of failure voor authenticatie bij elke
@@ -597,14 +609,14 @@ haalbaar en onderhoudbaar.
 - Elke service moet de publieke sleutel kennen en updaten
   bij rotatie
 
-### Governance
+## Governance
 
 Tokenvalidatie wordt niet gedupliceerd per service maar
 geïmplementeerd als gedeelde bibliotheek. Wijzigingen aan
 het tokenformaat of de sleutelrotatie vereisen coördinatie
 over alle services en een nieuwe ADR.
 
-### Notes
+## Notes
 
 Security is de eerste driving characteristic uit sectie 1.
 Authenticatie en autorisatie zijn de meest directe
