@@ -1,0 +1,150 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.2.5 Chrome/138.0.7204.251 Electron/37.6.1 Safari/537.36" version="28.2.5">
+  <diagram name="Page-1" id="e4KD7Cf58bV2taayIPNo">
+    <mxGraphModel dx="1307" dy="909" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3000" pageHeight="3000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="rOrBBaYLEfGZaBtKaCXD-17" value="Beheerder" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};participant=umlActor;verticalAlign=bottom;labelPosition=center;verticalLabelPosition=top;align=center;size=65;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="35" height="976" as="geometry" />
+        </mxCell>
+        <mxCell id="rOrBBaYLEfGZaBtKaCXD-18" value="Platform" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=65;" vertex="1" parent="1">
+          <mxGeometry x="275" y="20" width="150" height="976" as="geometry" />
+        </mxCell>
+        <mxCell id="rOrBBaYLEfGZaBtKaCXD-19" value="Identity &amp; Access" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=65;" vertex="1" parent="1">
+          <mxGeometry x="565" y="20" width="150" height="976" as="geometry" />
+        </mxCell>
+        <mxCell id="rOrBBaYLEfGZaBtKaCXD-20" value="Content Authoring" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=65;" vertex="1" parent="1">
+          <mxGeometry x="765" y="20" width="155" height="976" as="geometry" />
+        </mxCell>
+        <mxCell id="rOrBBaYLEfGZaBtKaCXD-21" value="Challenge Catalog" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=65;" vertex="1" parent="1">
+          <mxGeometry x="1098" y="20" width="151" height="976" as="geometry" />
+        </mxCell>
+        <mxCell id="rOrBBaYLEfGZaBtKaCXD-22" value="Session Orchestrator" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=65;" vertex="1" parent="1">
+          <mxGeometry x="1299" y="20" width="171" height="976" as="geometry" />
+        </mxCell>
+        <mxCell id="rOrBBaYLEfGZaBtKaCXD-23" value="Sandbox Runtime" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=65;" vertex="1" parent="1">
+          <mxGeometry x="1520" y="20" width="150" height="976" as="geometry" />
+        </mxCell>
+        <mxCell id="rOrBBaYLEfGZaBtKaCXD-24" value="1. Aanmelden" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="rOrBBaYLEfGZaBtKaCXD-17" target="rOrBBaYLEfGZaBtKaCXD-18">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="241" y="123" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rOrBBaYLEfGZaBtKaCXD-25" value="2. Authenticatie en rolcontrole" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="rOrBBaYLEfGZaBtKaCXD-18" target="rOrBBaYLEfGZaBtKaCXD-19">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="504" y="171" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rOrBBaYLEfGZaBtKaCXD-26" value="3. Toegang bevestigd" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;dashed=1;dashPattern=2 3;endArrow=block;" edge="1" parent="1" source="rOrBBaYLEfGZaBtKaCXD-19" target="rOrBBaYLEfGZaBtKaCXD-18">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="507" y="219" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rOrBBaYLEfGZaBtKaCXD-27" value="4. Challenge aanmaken" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="rOrBBaYLEfGZaBtKaCXD-17" target="rOrBBaYLEfGZaBtKaCXD-18">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="241" y="267" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rOrBBaYLEfGZaBtKaCXD-28" value="5. Nieuwe challenge opslaan" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="rOrBBaYLEfGZaBtKaCXD-18" target="rOrBBaYLEfGZaBtKaCXD-20">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="605" y="315" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rOrBBaYLEfGZaBtKaCXD-29" value="6. Challenge registreren in catalogus" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="rOrBBaYLEfGZaBtKaCXD-20" target="rOrBBaYLEfGZaBtKaCXD-21">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1017" y="363" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rOrBBaYLEfGZaBtKaCXD-30" value="7. Challenge beschikbaar" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;dashed=1;dashPattern=2 3;endArrow=block;" edge="1" parent="1" source="rOrBBaYLEfGZaBtKaCXD-21" target="rOrBBaYLEfGZaBtKaCXD-18">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="773" y="411" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rOrBBaYLEfGZaBtKaCXD-31" value="8. Challenge wijzigen" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="rOrBBaYLEfGZaBtKaCXD-17" target="rOrBBaYLEfGZaBtKaCXD-18">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="241" y="459" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rOrBBaYLEfGZaBtKaCXD-32" value="9. Wijzigingen opslaan" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="rOrBBaYLEfGZaBtKaCXD-18" target="rOrBBaYLEfGZaBtKaCXD-20">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="605" y="507" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rOrBBaYLEfGZaBtKaCXD-33" value="10. Catalogus bijwerken" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="rOrBBaYLEfGZaBtKaCXD-20" target="rOrBBaYLEfGZaBtKaCXD-21">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1017" y="555" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rOrBBaYLEfGZaBtKaCXD-34" value="11. Wijziging bevestigd" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;dashed=1;dashPattern=2 3;endArrow=block;" edge="1" parent="1" source="rOrBBaYLEfGZaBtKaCXD-21" target="rOrBBaYLEfGZaBtKaCXD-18">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="773" y="603" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rOrBBaYLEfGZaBtKaCXD-35" value="12. Sessie beëindigen" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="rOrBBaYLEfGZaBtKaCXD-17" target="rOrBBaYLEfGZaBtKaCXD-18">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="241" y="651" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rOrBBaYLEfGZaBtKaCXD-36" value="13. Actieve sessie stoppen" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="rOrBBaYLEfGZaBtKaCXD-18" target="rOrBBaYLEfGZaBtKaCXD-22">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="876" y="699" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rOrBBaYLEfGZaBtKaCXD-37" value="14. Sessie beëindigd" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;dashed=1;dashPattern=2 3;endArrow=block;" edge="1" parent="1" source="rOrBBaYLEfGZaBtKaCXD-22" target="rOrBBaYLEfGZaBtKaCXD-18">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="879" y="747" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rOrBBaYLEfGZaBtKaCXD-38" value="15. Sandbox opruimen" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="rOrBBaYLEfGZaBtKaCXD-17" target="rOrBBaYLEfGZaBtKaCXD-18">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="241" y="795" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rOrBBaYLEfGZaBtKaCXD-39" value="16. Sandbox verwijderen / resetten" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="rOrBBaYLEfGZaBtKaCXD-18" target="rOrBBaYLEfGZaBtKaCXD-23">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="981" y="843" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rOrBBaYLEfGZaBtKaCXD-40" value="17. Opruiming bevestigd" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;dashed=1;dashPattern=2 3;endArrow=block;" edge="1" parent="1" source="rOrBBaYLEfGZaBtKaCXD-23" target="rOrBBaYLEfGZaBtKaCXD-18">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="984" y="891" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -70,137 +70,135 @@ stellen hun eigen leerpad samen te stellen.
 
 # Logische componenten
 
-Het online hackingplatform wordt in deze sectie opgesplitst in logische componenten. Die componenten beschrijven de functionele bouwblokken van het systeem en hun verantwoordelijkheden. Het gaat hier nog niet om services, containers of deployment-eenheden, maar om een logische opdeling van het systeem.
+De logische componenten worden vastgelegd vóór een architecturale stijl
+gekozen wordt. Ze zijn geen services of deploybare eenheden, maar
+subsystemen met een duidelijk afgebakend takenpakket.
 
-## Tijdlijn van de gebruikersflow
+## Stap 1: Initiële kerncomponenten
 
-Als vertrekpunt wordt eerst de typische flow van een student bekeken bij het oplossen van een hacking challenge. Die tijdlijn maakt zichtbaar welke stappen doorlopen worden en welke verantwoordelijkheden daaruit voortvloeien.
+### Workflow approach
 
-![Workflowdiagram](./diagrammen/workflow.png)
+De workflow approach vertrekt vanuit een typische gebruikerservaring.
+We doorlopen de user journey "Gebruiker lost een hacking challenge op"
+en mappen de conceptuele stappen op logische componenten.
 
-De flow start wanneer een student zich aanmeldt op het platform. Daarna worden challenges doorzocht en wordt een challenge geselecteerd. Vervolgens wordt een oefenomgeving opgestart en maakt de student verbinding met de sandbox. In die omgeving voert de student commando's, scripts of exploits uit. Daarna wordt een oplossing of flag ingediend, waarna het resultaat wordt teruggegeven en de student zijn voortgang en score kan bekijken.
+![Workflow diagram](./diagrammen/workflow.png)
 
-Deze tijdlijn toont dat de functionaliteit van het systeem uit meerdere duidelijk verschillende taken bestaat. Authenticatie, profielbeheer, challengebeheer, sessiebeheer, sandbox-uitvoering en evaluatie hebben elk een eigen rol binnen het platform.
+De stappen leiden tot de volgende initiële componenten:
 
-## Use-case diagram
+- **Aanmelden** → User Management
+- **Challenges doorzoeken en selecteren** → Challenge Catalog
+- **Omgeving opstarten** → Sandbox Provisioner
+- **Verbinden met en werken in sandbox** → Challenge Interface
+- **Flag indienen** → Submission Validator
+- **Voortgang bekijken** → Progress Tracker
 
-Het use-case diagram geeft op hoofdlijnen weer welke interacties de student en de beheerder met het platform hebben.
+### Actor/action approach
 
-![Use-case diagram](./diagrammen/usecasediagram.png)
+De actor/action approach is aanvullend toegepast omdat het platform
+meerdere soorten gebruikers heeft met uiteenlopende handelingen.
+De drie actors zijn: Student, Instructor en System (voor automatische
+acties).
 
-De student gebruikt het platform om zich te registreren of aan te melden, zijn profiel of niveau in te stellen, challenges te bekijken en te selecteren, een oefensessie te starten, code of exploits uit te voeren, een oplossing of flag in te dienen en nadien de voortgang te bekijken.
+![Actor/action diagram](./diagrammen/actor-action.png)
 
-De beheerder gebruikt het platform om zich aan te melden, challenges aan te maken en te wijzigen, sessies te beëindigen en sandboxen op te ruimen.
+De actor/action analyse bevestigt de componenten uit de workflow
+approach en voegt één bijkomende component toe: **Content Manager**,
+verantwoordelijk voor het aanmaken en publiceren van challenges door
+instructors. Deze component kon niet worden afgeleid uit de
+studentgerichte workflow.
 
-Het use-case diagram toont enkel de interacties tussen de actoren en het platform. De interne afhandeling van die acties wordt verder uitgewerkt in de sequence diagrammen.
+## Stap 2: Requirements toewijzen aan componenten
 
-## Sequence diagram van de student
+| Requirement                                              | Component            |
+|----------------------------------------------------------|----------------------|
+| Gebruikers kunnen een account aanmaken en aanmelden      | User Management      |
+| Gebruikers kunnen challenges doorzoeken en filteren      | Challenge Catalog    |
+| Gebruikers kunnen een leerpad samenstellen               | Challenge Catalog    |
+| Gebruikers kunnen een oefenomgeving opstarten            | Sandbox Provisioner  |
+| Gebruikers kunnen commando's uitvoeren in de omgeving    | Challenge Interface  |
+| Gebruikers kunnen een flag of antwoord indienen          | Submission Validator |
+| Gebruikers kunnen hun voortgang en score bekijken        | Progress Tracker     |
+| Instructors kunnen challenges aanmaken en publiceren     | Content Manager      |
+| Het systeem herstelt een gecrashe omgeving automatisch   | Sandbox Provisioner  |
+| Het systeem werkt scores bij na een correcte indiening   | Progress Tracker     |
 
-De interacties van de student worden afzonderlijk weergegeven zodat de volledige leerflow in één samenhangend diagram zichtbaar blijft.
+## Stap 3: Rol en verantwoordelijkheden per component
 
-![Sequence diagram student](./diagrammen/sequencediagram-student.png)
+### User Management
 
-In deze flow registreert en authenticatieert de student zich eerst via het platform. Daarna worden profiel en niveau ingesteld. Vervolgens vraagt de student het challenge-overzicht op, selecteert een challenge en start een oefensessie. Het platform laat daarvoor een sandbox klaarzetten. Tijdens de sessie voert de student code of exploits uit en dient daarna een oplossing of flag in. Ten slotte wordt de oplossing gevalideerd, de voortgang bijgewerkt en de geactualiseerde voortgang opnieuw aan de student getoond.
-
-Dit diagram bevat alle studentacties uit het use-case diagram: registreren, aanmelden, profiel of niveau instellen, challenges bekijken, challenges selecteren, een oefensessie starten, code of exploit uitvoeren, een oplossing of flag indienen en de voortgang bekijken.
-
-## Sequence diagram van de beheerder
-
-De beheerder krijgt een afzonderlijk sequence diagram, omdat deze actor een andere verantwoordelijkheid heeft dan de student en geen leerflow doorloopt.
-
-![Sequence diagram beheerder](./diagrammen/sequencediagram-beheerder.png)
-
-De beheerder meldt zich eerst aan op het platform. Daarna kan een nieuwe challenge worden aangemaakt of kan een bestaande challenge worden gewijzigd. Deze wijzigingen worden verwerkt en zichtbaar gemaakt in de challengecatalogus. Daarnaast kan de beheerder een actieve sessie beëindigen en een sandbox laten opruimen of resetten.
-
-Ook dit diagram bevat alle beheerderacties uit het use-case diagram: aanmelden, challenge aanmaken, challenge wijzigen, sessie beëindigen en sandbox opruimen.
-
-## Afleiding van de logische componenten
-
-Uit de tijdlijn, het use-case diagram en de sequence diagrammen volgen de logische componenten van het platform. Elke component groepeert taken die inhoudelijk bij elkaar horen en een gezamenlijke verantwoordelijkheid vormen.
-
-### Identity & Access
-
-Deze component behandelt registratie, authenticatie, sessiebeheer en toegangscontrole. Alle interacties rond het identificeren van studenten en beheerders worden hier samengebracht.
-
-### Profile & Learning Path
-
-Deze component beheert profielinformatie, niveau-instellingen, voortgang en het persoonlijke leerpad van een student.
-
-### Challenge Catalog
-
-Deze component ontsluit het beschikbare aanbod aan challenges en levert de informatie die nodig is om challenges te bekijken en te selecteren.
-
-### Session Orchestrator
-
-Deze component beheert de levenscyclus van een oefensessie. Het opstarten en beëindigen van sessies wordt hier ondergebracht.
-
-### Sandbox Runtime
-
-Deze component levert de effectieve uitvoeromgeving waarin een student commando's, scripts en exploits uitvoert. Ook het resetten en opruimen van de omgeving behoort tot deze component.
-
-### Evaluation & Scoring
-
-Deze component valideert oplossingen of flags, bepaalt het resultaat van een challengepoging en ondersteunt de verwerking van feedback en voortgang.
-
-### Content Authoring
-
-Deze component ondersteunt het inhoudelijk beheer van challenges. Het aanmaken en wijzigen van oefenmateriaal wordt hier gegroepeerd.
-
-## Taken per component
-
-### Identity & Access
-
-- Gebruikers registreren.
-- Studenten en beheerders authenticeren.
-- Toegangscontrole uitvoeren.
-- Sessies valideren.
-
-### Profile & Learning Path
-
-- Profielgegevens bewaren.
-- Niveau-instellingen beheren.
-- Voortgang opslaan.
-- Leerstatus teruggeven.
+Verantwoordelijk voor alles wat met gebruikersidentiteit te maken
+heeft: registratie, aanmelden, profielbeheer en het toewijzen van
+rollen (student, instructor, beheerder). Geen enkele andere component
+bepaalt wie een gebruiker is of welke rechten die heeft.
 
 ### Challenge Catalog
 
-- Beschikbare challenges tonen.
-- Geselecteerde challengegegevens teruggeven.
-- De catalogus actualiseren na beheeracties.
+Beheert het overzicht van beschikbare challenges. Studenten kunnen
+filteren op categorie, moeilijkheidsgraad en technologie. De component
+laat ook toe een persoonlijk leerpad samen te stellen. De catalog
+bevat enkel metadata over challenges, niet de challenges zelf of de
+bijhorende omgevingen.
 
-### Session Orchestrator
+### Sandbox Provisioner
 
-- Oefensessies starten.
-- Actieve sessies beëindigen.
-- Sandbox-opstart aanvragen.
-- Sessiestatus bewaken.
+Start, stopt en monitort geïsoleerde oefenomgevingen. Wanneer een
+omgeving crasht of een tijdslimiet overschrijdt, is deze component
+verantwoordelijk voor het automatisch herstel of beëindigen van de
+omgeving. De Sandbox Provisioner is de enige component die rechtstreeks
+met de onderliggende infrastructuur voor isolatie werkt.
 
-### Sandbox Runtime
+### Challenge Interface
 
-- Oefenomgevingen uitvoeren.
-- Code en exploits verwerken.
-- Uitvoer teruggeven.
-- Sandboxen resetten of opruimen.
+Verleent de gebruiker toegang tot een actieve sandbox. Dit omvat het
+beheren van de terminal- of browsersessie waarmee de gebruiker met
+de omgeving communiceert. De component is enkel actief zolang een
+omgeving loopt en delegeert het opstarten ervan aan de Sandbox
+Provisioner.
 
-### Evaluation & Scoring
+### Submission Validator
 
-- Oplossingen en flags valideren.
-- Resultaten bepalen.
-- Feedback genereren.
-- Voortgangsupdates aanleveren.
+Ontvangt ingediende flags of antwoorden en controleert of deze
+overeenkomen met de verwachte oplossing van een challenge. Na
+validatie geeft de component het resultaat door aan de Progress
+Tracker. De validatielogica is geïsoleerd in deze component zodat
+wijzigingen aan het validatiemechanisme geen andere componenten
+raken.
 
-### Content Authoring
+### Progress Tracker
 
-- Challenges aanmaken.
-- Bestaande challenges wijzigen.
-- Wijzigingen opslaan.
-- Inhoud beschikbaar maken voor de catalogus.
+Houdt per gebruiker bij welke challenges afgerond zijn, welke score
+behaald werd en welke achievements verdiend zijn. Deze component
+ontvangt enkel resultaten van de Submission Validator en schrijft
+nooit rechtstreeks naar de catalog of de omgevingen.
 
-## Samenhang van de opdeling
+### Content Manager
 
-De gekozen opdeling volgt de natuurlijke scheiding tussen toegang, leerinformatie, challengebeheer, sessiebeheer, uitvoering en evaluatie. Daardoor krijgt elke belangrijke taak van het platform een duidelijke plaats binnen het systeem.
+Laat instructors toe challenges aan te maken, te configureren en te
+publiceren. Een gepubliceerde challenge wordt beschikbaar gesteld in
+de Challenge Catalog. De Content Manager beheert ook de definitie van
+de omgeving die de Sandbox Provisioner later zal opstarten.
 
-De studentflow en de beheerderflow tonen bovendien dat inhoudelijk beheer, uitvoering van challengecode en toegangscontrole niet in éénzelfde component thuishoren. Door die verantwoordelijkheden te scheiden ontstaat een duidelijker en beter verdedigbaar logisch model van het platform.
+## Stap 4: Architecturale karakteristieken analyseren
+
+De driving characteristics uit sectie 1 worden hier getoetst aan de
+componentenverdeling.
+
+**Security** vereist dat de Sandbox Provisioner volledig geïsoleerd
+opereert en dat geen enkele andere component rechtstreeks toegang
+heeft tot de infrastructuur van de sandbox. De Challenge Interface
+is het enige toegangspunt voor de gebruiker tot de actieve omgeving.
+
+**Fault Tolerance** vereist dat de Sandbox Provisioner zelfstandig
+kan herstellen zonder andere componenten te onderbreken. De
+componentenverdeling ondersteunt dit: een crash in een omgeving
+raakt enkel de Sandbox Provisioner en de Challenge Interface, niet
+de Catalog, de Validator of de Progress Tracker.
+
+**Scalability** vereist dat de Sandbox Provisioner en de Challenge
+Interface kunnen meeschalen met het aantal actieve gebruikers. De
+overige componenten schalen minder intensief mee omdat ze niet per
+actieve sessie belast worden.
 
 # ADR Architecturale Stijl
 ## Context

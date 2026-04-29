@@ -1,0 +1,244 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.2.5 Chrome/138.0.7204.251 Electron/37.6.1 Safari/537.36" version="28.2.5">
+  <diagram name="Page-1" id="lmwb1-jN-ocSlK5flovT">
+    <mxGraphModel dx="1111" dy="773" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3000" pageHeight="3000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-2" value="Student" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};participant=umlActor;verticalAlign=bottom;labelPosition=center;verticalLabelPosition=top;align=center;size=65;" vertex="1" parent="1">
+          <mxGeometry x="20" y="580" width="35" height="1600" as="geometry" />
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-3" value="Platform" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=65;" vertex="1" parent="1">
+          <mxGeometry x="294" y="580" width="150" height="1600" as="geometry" />
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-4" value="Identity &amp; Access" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=65;" vertex="1" parent="1">
+          <mxGeometry x="551" y="580" width="150" height="1600" as="geometry" />
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-5" value="Profile &amp; Learning Path" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=65;" vertex="1" parent="1">
+          <mxGeometry x="751" y="580" width="185" height="1600" as="geometry" />
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-6" value="Challenge Catalog" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=65;" vertex="1" parent="1">
+          <mxGeometry x="986" y="580" width="151" height="1600" as="geometry" />
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-7" value="Session Orchestrator" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=65;" vertex="1" parent="1">
+          <mxGeometry x="1187" y="580" width="171" height="1600" as="geometry" />
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-8" value="Sandbox Runtime" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=65;" vertex="1" parent="1">
+          <mxGeometry x="1421" y="580" width="150" height="1600" as="geometry" />
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-9" value="Evaluation &amp; Scoring" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=65;" vertex="1" parent="1">
+          <mxGeometry x="1621" y="580" width="166" height="1600" as="geometry" />
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-10" value="1. Registreren" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="ap-UjBjdWJrseMVoRYQR-2" target="ap-UjBjdWJrseMVoRYQR-3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="241" y="683" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-11" value="2. Account aanmaken" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="ap-UjBjdWJrseMVoRYQR-3" target="ap-UjBjdWJrseMVoRYQR-4">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="506" y="731" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-12" value="3. Registratie bevestigd" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;dashed=1;dashPattern=2 3;endArrow=block;" edge="1" parent="1" source="ap-UjBjdWJrseMVoRYQR-4" target="ap-UjBjdWJrseMVoRYQR-3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="509" y="779" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-13" value="4. Aanmelden" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="ap-UjBjdWJrseMVoRYQR-2" target="ap-UjBjdWJrseMVoRYQR-3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="241" y="827" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-14" value="5. Authenticatie uitvoeren" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="ap-UjBjdWJrseMVoRYQR-3" target="ap-UjBjdWJrseMVoRYQR-4">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="506" y="875" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-15" value="6. Toegang bevestigd" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;dashed=1;dashPattern=2 3;endArrow=block;" edge="1" parent="1" source="ap-UjBjdWJrseMVoRYQR-4" target="ap-UjBjdWJrseMVoRYQR-3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="509" y="923" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-16" value="7. Profiel / niveau instellen" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="ap-UjBjdWJrseMVoRYQR-2" target="ap-UjBjdWJrseMVoRYQR-3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="241" y="971" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-17" value="8. Profielgegevens bewaren" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="ap-UjBjdWJrseMVoRYQR-3" target="ap-UjBjdWJrseMVoRYQR-5">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="615" y="1019" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-18" value="9. Profiel opgeslagen" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;dashed=1;dashPattern=2 3;endArrow=block;" edge="1" parent="1" source="ap-UjBjdWJrseMVoRYQR-5" target="ap-UjBjdWJrseMVoRYQR-3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="618" y="1067" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-19" value="10. Challenges bekijken" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="ap-UjBjdWJrseMVoRYQR-2" target="ap-UjBjdWJrseMVoRYQR-3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="241" y="1115" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-20" value="11. Beschikbare challenges ophalen" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="ap-UjBjdWJrseMVoRYQR-3" target="ap-UjBjdWJrseMVoRYQR-6">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="724" y="1163" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-21" value="12. Challenge-overzicht teruggeven" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;dashed=1;dashPattern=2 3;endArrow=block;" edge="1" parent="1" source="ap-UjBjdWJrseMVoRYQR-6" target="ap-UjBjdWJrseMVoRYQR-3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="727" y="1211" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-22" value="13. Challenges selecteren" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="ap-UjBjdWJrseMVoRYQR-2" target="ap-UjBjdWJrseMVoRYQR-3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="241" y="1259" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-23" value="14. Geselecteerde challenge ophalen" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="ap-UjBjdWJrseMVoRYQR-3" target="ap-UjBjdWJrseMVoRYQR-6">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="724" y="1307" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-24" value="15. Challengegegevens teruggeven" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;dashed=1;dashPattern=2 3;endArrow=block;" edge="1" parent="1" source="ap-UjBjdWJrseMVoRYQR-6" target="ap-UjBjdWJrseMVoRYQR-3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="727" y="1355" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-25" value="16. Oefensessie starten" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="ap-UjBjdWJrseMVoRYQR-2" target="ap-UjBjdWJrseMVoRYQR-3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="241" y="1403" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-26" value="17. Sessiestart aanvragen" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="ap-UjBjdWJrseMVoRYQR-3" target="ap-UjBjdWJrseMVoRYQR-7">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="829" y="1451" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-27" value="18. Sandbox voorzien" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="ap-UjBjdWJrseMVoRYQR-7" target="ap-UjBjdWJrseMVoRYQR-8">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1393" y="1499" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-28" value="19. Sandbox klaar" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;dashed=1;dashPattern=2 3;endArrow=block;" edge="1" parent="1" source="ap-UjBjdWJrseMVoRYQR-8" target="ap-UjBjdWJrseMVoRYQR-7">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1396" y="1547" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-29" value="20. Sessie gestart" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;dashed=1;dashPattern=2 3;endArrow=block;" edge="1" parent="1" source="ap-UjBjdWJrseMVoRYQR-7" target="ap-UjBjdWJrseMVoRYQR-3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="832" y="1595" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-30" value="21. Code / exploit uitvoeren" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="ap-UjBjdWJrseMVoRYQR-2" target="ap-UjBjdWJrseMVoRYQR-3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="241" y="1643" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-31" value="22. Uitvoering doorsturen" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="ap-UjBjdWJrseMVoRYQR-3" target="ap-UjBjdWJrseMVoRYQR-8">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="941" y="1691" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-32" value="23. Uitvoer / resultaat teruggeven" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;dashed=1;dashPattern=2 3;endArrow=block;" edge="1" parent="1" source="ap-UjBjdWJrseMVoRYQR-8" target="ap-UjBjdWJrseMVoRYQR-3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="944" y="1739" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-33" value="24. Oplossing / flag indienen" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="ap-UjBjdWJrseMVoRYQR-2" target="ap-UjBjdWJrseMVoRYQR-3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="241" y="1787" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-34" value="25. Oplossing valideren" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="ap-UjBjdWJrseMVoRYQR-3" target="ap-UjBjdWJrseMVoRYQR-9">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1045" y="1835" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-35" value="26. Voortgang bijwerken" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="ap-UjBjdWJrseMVoRYQR-9" target="ap-UjBjdWJrseMVoRYQR-5">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1285" y="1883" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-36" value="27. Feedback en resultaat teruggeven" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;dashed=1;dashPattern=2 3;endArrow=block;" edge="1" parent="1" source="ap-UjBjdWJrseMVoRYQR-9" target="ap-UjBjdWJrseMVoRYQR-3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1048" y="1931" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-37" value="28. Voortgang bekijken" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="ap-UjBjdWJrseMVoRYQR-2" target="ap-UjBjdWJrseMVoRYQR-3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="241" y="1979" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-38" value="29. Voortgang ophalen" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="ap-UjBjdWJrseMVoRYQR-3" target="ap-UjBjdWJrseMVoRYQR-5">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="615" y="2027" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ap-UjBjdWJrseMVoRYQR-39" value="30. Voortgang teruggeven" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;dashed=1;dashPattern=2 3;endArrow=block;" edge="1" parent="1" source="ap-UjBjdWJrseMVoRYQR-5" target="ap-UjBjdWJrseMVoRYQR-3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="618" y="2075" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
