@@ -210,7 +210,7 @@ De studentflow en de beheerderflow tonen bovendien dat inhoudelijk beheer, uitvo
 ## Context
 
 Het platform laat gebruikers toe echte exploits en aanvalscode uit
-te voeren in geïsoleerde oefenomgevingen. De driving characteristics
+te voeren in geïsoleerde oefenomgevingen. De belangrijkste architecturale karakteristieken
 zijn security, fault tolerance en scalability. Het ontwikkelteam
 telt vier personen en heeft een doorlooptijd van zes maanden voor
 een productieklare versie.
@@ -225,77 +225,19 @@ die in de cursus aan bod zijn gekomen:
 | Modulaire monoliet | Domein         | Monolitisch     |
 | Microservices      | Domein         | Gedistribueerd  |
 
-### Gelaagde architectuur
-
-De gelaagde architectuur verdeelt het systeem in technische lagen
-(presentatie, logica, persistentie). Deze stijl scoort goed op
-eenvoud en initiële kost, maar heeft significante tekortkomingen
-voor dit systeem. Fault tolerance is zeer beperkt: een crash in
-één laag kan het hele systeem platleggen. Scalability is eveneens
-beperkt omdat het systeem als één geheel moet worden opgeschaald.
-De Sandbox Provisioner, die het meest belast wordt en het grootste
-veiligheidsrisico vormt, kan niet afzonderlijk worden opgeschaald
-of geïsoleerd. Domeinwijzigingen, zoals het toevoegen van een nieuw
-type omgeving, zijn ingrijpend omdat ze door meerdere technische
-lagen heen lopen. Deze stijl valt af.
-
-### Microkernel
-
-De microkernel-architectuur bestaat uit een stabiele kern en
-uitbreidbare plugins. Dit is sterk voor extensibility: nieuwe
-challenge-types of omgevingstypes kunnen als plugin worden
-toegevoegd zonder de kern te wijzigen. De stijl scoort echter
-zwak op fault tolerance en scalability om dezelfde redenen als
-de gelaagde architectuur: het geheel wordt monolitisch gedeployed.
-Een crash in een plugin kan de kern destabiliseren tenzij hier
-expliciet voor ontworpen wordt. Voor een platform waar gebruikers
-actief de grenzen van omgevingen testen is dit onvoldoende.
-Deze stijl valt af.
-
-### Modulaire monoliet
-
-De modulaire monoliet verdeelt het systeem op basis van domein
-in modules met harde grenzen. Dit verbetert de onderhoudbaarheid
-en maakt het mogelijk per module te redeneren over
-verantwoordelijkheden. De grenzen tussen de logische componenten
-uit sectie 2 kunnen hier direct worden toegepast. De stijl is
-haalbaar voor een team van vier binnen zes maanden. Het
-fundamentele probleem blijft echter dat het systeem als één
-eenheid gedeployed wordt. De Sandbox Provisioner, die omgevingen
-moet kunnen herstellen zonder andere componenten te onderbreken,
-kan niet onafhankelijk worden uitgerold of opgeschaald. Security-
-incidenten in een sandbox kunnen zich in theorie uitbreiden naar
-andere modules omdat ze hetzelfde proces delen. Dit is voor dit
-specifieke systeem een te groot risico.
-
-### Microservices
-
-De microservices-architectuur verdeelt het systeem in afzonderlijk
-deploybare diensten op basis van domein. Elke logische component
-uit sectie 2 kan als een aparte service worden uitgerold. Dit
-biedt de sterkste ondersteuning voor de drie driving
-characteristics. Security: de Sandbox Provisioner draait in
-volledig geïsoleerde containers en een incident aldaar bereikt
-andere services niet. Fault tolerance: een gecrashe sandbox-
-omgeving brengt enkel de betrokken service in de problemen, de
-rest van het systeem blijft operationeel. Scalability: de Sandbox
-Provisioner en Challenge Interface, die het zwaarst belast worden,
-kunnen onafhankelijk worden opgeschaald zonder de andere services
-aan te raken. De kostprijs is reële complexiteit: gedistribueerde
-systemen vereisen aandacht voor netwerkcommunicatie, data
-ownership en observability.
+Elke stijl wordt geëvalueerd op basis van de impact op de belangrijkste karakteristieken.
 
 ## Decision
 
 **We kiezen voor microservices.**
 
-De drie driving characteristics security, fault tolerance en
-scalability vereisen elk dat de Sandbox Provisioner volledig
-geïsoleerd en onafhankelijk kan opereren. Geen enkele monolitische
-stijl kan dit garanderen. Microservices is de enige stijl uit de
-cursus die dit structureel mogelijk maakt. De hogere complexiteit
-is voor dit systeem geen optionele afweging maar een noodzakelijke
-kost die voortvloeit uit de aard van het platform.
+Deze keuze wordt gemaakt omdat de drie belangrijkste karakteristieken 
+(security, fault tolerance en scalability) vereisen dat kritieke
+onderdelen, zoals de Sandbox Provisioner, onafhankelijk
+kunnen opereren, schalen en falen zonder impact op anderen delen van het systeem.
+
+Microservices bieden deze isolatie en onafhankelijkheid structureel, 
+terwijl monolitische stijlen dit niet kunnen garanderen.
 
 Als het team groter of het budget hoger zou zijn, zou de keuze
 voor microservices nog sterker worden ondersteund door de
@@ -309,18 +251,16 @@ architectuur.
 ## Consequences
 
 **Wat wordt mogelijk:**
-- De Sandbox Provisioner kan onafhankelijk worden opgeschaald
-- Een incident in een sandbox bereikt andere services niet
-- Elke service kan afzonderlijk worden uitgerold en getest
-- Services kunnen per domein in de meest geschikte technologie
-  worden geïmplementeerd indien gewenst
+- Services kunnen onafhankelijk worden opgeschaald (vooral Sandbox Provisioner)
+- Fouten in één service beïnvloeden andere services niet
+- Services kunnen afzonderlijk worden ontwikkeld, getest en gedeployed
+- Mogelijkheid om per service technologiekeuzes te maken
 
 **Wat wordt moeilijker of vereist extra werk:**
-- Data ownership moet expliciet worden vastgelegd per service
-- Communicatie tussen services vereist een bewuste keuze
-  (synchroon of asynchroon)
-- Observability over meerdere services vereist tooling
-- Gedistribueerde transacties zijn complexer dan lokale
+- Complexere communicatie tussen services (netwerk, latency)
+- Data ownership moet expliciet worden vastgelegd
+- Observability en monitoring vereisen extra tooling
+- Gedistribueerde systemen verhogen de complexiteit van debugging en testing
 
 ## Governance
 
@@ -329,17 +269,16 @@ gerespecteerd worden: geen directe database-toegang over
 service-grenzen heen. Dit wordt bewaakt via code review. Elke
 nieuwe service vereist een bijkomende ADR die de
 verantwoordelijkheid en de communicatie-interfaces vastlegt.
+Communicatiepatronen worden vastgelegd volgens ADR 002.
 
 ## Notes
 
-**Tweede keuze: Modulaire monoliet.** De logische componenten uit
-sectie 2 zijn al op basis van domein afgebakend, wat rechtstreeks
-aansluit bij de domeinpartitionering van een modulaire monoliet.
-Bij een kleinere teamgrootte of een strikter budget zou de
-modulaire monoliet de voorkeur krijgen omdat de operationele
-complexiteit significant lager is en een latere migratie naar
-microservices vanuit een modulaire monoliet een gekende en
-haalbare weg is.
+**Tweede keuze: Modulaire monoliet.**
+Deze stijl sluit goed aan bij de domein-gebaseerde componenten 
+en is eenvoudiger te implementeren binnen een klein team.
+De keuze voor microservices wordt echter gerechtvaardigd 
+door de hogere eisen op vlak van security, fault tolerance 
+en scalability.
 
 ## Title: ADR 002: Communicatie tussen services
 ## Status: Proposed
@@ -367,12 +306,13 @@ sectie 2 zijn niet allemaal van hetzelfde type:
 
 ## Decision
 
-**We gebruiken synchrone communicatie (REST over HTTP) voor
-tijdskritische interacties en asynchrone communicatie via een
-message broker voor events waarbij de aanroeper niet hoeft
-te wachten op verwerking.**
+**Er wordt gekozen voor een hybride communicatiemodel:**
+- **Synchrone communicatie (REST over HTTP)** voor tijdskritische 
+interacties waarbij een onmiddelijk antwoord vereist is
+- **Asynchrone communicatie (via een message broker)** voor events 
+waarbij de aanroeper niet hoeft te wachten op verwerking
 
-Concreet:
+Concrete toepassing:
 - Student <=> Challenge Catalog: synchroon
 - Student <=> Sandbox Provisioner (opstarten): synchroon
 - Student <=> Challenge Interface: synchroon
@@ -390,50 +330,64 @@ koste van fault tolerance.
 ## Consequences
 
 **Wat wordt mogelijk:**
-- Services zijn niet geblokkeerd op trage of falende
-  ontvangers bij asynchrone communicatie
+- Services zijn minder afhankelijk van elkaar bij 
+asynchrone communicatie
 - Tijdskritische interacties blijven snel en voorspelbaar
-- De Progress Tracker kan tijdelijk offline zijn zonder
-  dat een indiening verloren gaat
+- Het systeem is beter bestand tegen tijdelijke uitval van services
+- Verwerking kan schaalbaar gebeuren via event-based flows
 
 **Wat extra werk vereist:**
-- Er moet infrastructuur voorzien worden voor een message
-  broker
-- Asynchrone flows zijn moeilijker te debuggen dan
-  synchrone calls
-- Eventual consistency moet bewust worden aanvaard voor
-  de Progress Tracker
+- Infrastructuur voor een message broker moet voorzien worden
+- Asynchrone flows zijn moeilijker te debuggen en te testen
+- Eventual consistency moet expliciet aanvaard worden
+- Complexiteit in foutafhandeling en retries
 
 ## Governance
 
 Bij elke nieuwe communicatielijn tussen services wordt in
 code review gecontroleerd of de keuze synchroon/asynchroon
 gemotiveerd is. Nieuwe asynchrone verbindingen worden
-gedocumenteerd in een berichtenoverzicht.
+gedocumenteerd in een berichtenoverzicht. Nieuwe messaging-patronen vereisen 
+een bijkomende ADR indien ze impact hebben op meerdere services.
 
 ## Notes
 
-Tekst
+Deze beslissing ondersteunt de karakteristieken **fault tolerance** en **scalability**, 
+zoals gedefinieerd in sectie 1. Als het team groter of het budget hoger zou zijn, 
+kan een API gateway toegevoegd worden als centrale toegangspoort voor externe clients. 
+Dit zou authenticatie, logging en rate limiting centraliseren. 
+Bij een kleiner team of eenvoudiger systeem zou een volledig synchrone aanpak 
+eenvoudiger zijn, maar dit gaat ten koste van robuustheid en schaalbaarheid.
 
 ## Title: ADR 003: Data ownership per service
 ## Status: Proposed
 
 ## Context
 
-In een microservices-architectuur is het verleidelijk om één
-centrale databank te delen tussen alle services. Dit vereenvoudigt
-queries en vermijdt dubbele data, maar introduceert een sterke
-koppeling: een schemawijziging in de gedeelde databank kan alle
-services die dit schema gebruiken breken.
+Binnen een microservices-architectuur moeten services omgaan 
+met dataopslag. Een mogelijke aanpak is het gebruik van één 
+gedeelde databank voor alle services. Dit vereenvoudigt queries 
+en vermijdt dataduplicatie, maar introduceert sterke koppeling 
+tussen services: wijzigingen aan het databankschema kunnen 
+meerdere services tegelijk breken.
 
-De logische componenten uit sectie 2 hebben elk een duidelijk
-afgebakend domein. De vraag is of ze een gedeelde databank
-gebruiken of elk hun eigen schema beheren.
+De logische componenten in dit systeem zijn duidelijk afgebakend 
+per domein (bijv. gebruikersbeheer, challenges, voortgang). Dit 
+roept de vraag op of deze componenten een gedeelde databank moeten 
+gebruiken of elk hun eigen dataschema moeten beheren.
+
+Daarnaast vereisen de karakteristieken **scalability, fault tolerance 
+en maintainability** dat services zo onafhankelijk mogelijk 
+kunnen evolueren en deployen.
 
 ## Decision
 
-**Elke service beheert zijn eigen dataschema. Geen enkele service
-leest rechtstreeks uit het schema van een andere service.**
+Elke service beheert zijn **eigen dataschema**. Geen enkele service
+leest of schrijft rechtstreeks naar het schema van een ander service.
+
+Data-uitwisseling tussen services gebeurt uitsluitend via de 
+communicatiekanalen zoals gedefinieerd in ADR 002, en niet 
+via gedeelde databanktables.
 
 Concreet betekent dit:
 - User Management beheert het gebruikersschema
@@ -443,101 +397,98 @@ Concreet betekent dit:
 - Progress Tracker beheert scores en voortgang per gebruiker
 - Content Manager beheert de ruwe challenge-definities
 
-Data die meerdere services nodig hebben wordt uitgewisseld
-via de communicatiekanalen uit ADR 002, niet via gedeelde
-tabellen. Dit mogen wel schema's zijn op dezelfde fysieke
-databaseserver zolang de toegang via de service-API verloopt.
-
-Als het budget groter zou zijn, zou elke service zijn eigen
-fysieke database-instantie krijgen. Met het huidige team en
-budget zijn gescheiden schema's op één server een aanvaardbaar
-compromis.
+Als implementatiekeuze worden deze schema's ondergebracht op 
+één fysieke databaseserver, met strikte scheiding per service.
+Toegang tot data verloopt uitsluitend via de respectieve service-API.
 
 ## Consequences
 
 **Wat wordt mogelijk:**
-- Een service kan zijn schema wijzigen zonder andere services
-  te breken
+- Services kunnen onafhankelijk evolueren zonder impact op andere services
 - Services zijn onafhankelijk testbaar en deploybaar
-- Data ownership is expliciet en traceerbaar
+- Data ownership is expliciet en duidelijk per domein
+- Schemawijzigingen zijn lokaal en beheersbaar
 
 **Wat extra werk vereist:**
-- Geen JOIN-queries over service-grenzen: composities
-  moeten in code worden gedaan
-- Mogelijke duplicatie van data (bv. gebruikersnaam zichtbaar
-  in Progress Tracker zonder rechtstreekse join op
-  User Management)
-- Eventual consistency bij asynchrone updates
+- JOIN-queries over servicegrenzen zijn niet mogelijk
+- Data moet soms gedupliceerd worden tussen services
+- Eventual consistency moet aanvaard worden bij asynchrone updates
+- Composities van data moeten in applicatielogica gebeuren
 
 ## Governance
 
 Code review controleert dat geen enkele service rechtstreeks
 een tabel van een andere service aanroept. Dit wordt ook
 bewaakt via netwerkconfiguratie: services krijgen enkel
-toegang tot hun eigen schema.
+toegang tot hun eigen schema. Nieuwe data-afhankelijkheden 
+moeten via API's of events verlopen. Wijzigingen in datastructuren 
+worden gedocumenteerd en kunnen aanleiding geven tot een nieuwe ADR.
 
 ## Notes
 
-Tekst
+Deze beslissing ondersteunt de karakteristieken **scalability, 
+fault tolerance en maintainability** door sterke koppeling 
+tussen services te vermijden. Bij een groter budget of complexer 
+systeem zou elke service een eigen fysieke database-instantie krijgen. 
+In de huidige context (team van vier, beperkte scope) is een 
+gedeelde databaseserver met gescheiden schema’s een pragmatisch compromis.
 
 ## Title: ADR 004: Isolatie van sandbox-omgevingen
 ## Status: Proposed
 
 ## Context
 
-Gebruikers voeren echte exploits en aanvalscode uit op het
-platform. De Sandbox Provisioner moet garanderen dat een
-gebruiker nooit buiten zijn eigen omgeving kan geraken. Dit
-is de meest kritische architecturale beslissing voor de
-driving characteristic security.
+Gebruikers van het platform voeren echte exploits en aanvalscode 
+uit binnen oefeningomgevingen. Dit brengt een hoog veiligheidsrisico 
+met zich mee: een onvoldoende geïsoleerde omgeving kan leiden 
+tot toegang tot andere gebruikersomgevingen of tot de onderliggende 
+infrastructuur.
 
-Er zijn drie mogelijke benaderingen:
-- **Procesisolatie**: de omgeving draait als een apart proces
-  op de host, geïsoleerd via OS-mechanismen
-- **Containerisolatie**: de omgeving draait in een Linux
-  container (Docker of gelijkaardig)
-- **VM-isolatie**: de omgeving draait in een volledige
-  virtuele machine
+De isolatie van sandbox-omgevingen is daarom een kritische 
+architecturale beslissing die rechtstreeks impact heeft op 
+de karakteristieken **security** en **fault tolerance**.
+
+Er zijn drie mogelijke benaderingen voor isolatie:
+- **Procesisolatie**: uitvoering als aparte processen op de 
+host, geïsoleerd via OS-mechanismen
+- **Containerisolatie**: uitvoering binnen containers (bijv. Docker)
+- **VM-isolatie**: uitvoering binnen volledige virtuele machines
+
+Elke benadering biedt een verschillend niveau van isolatie, 
+performantie en operationele complexiteit.
 
 ## Decision
 
-**Sandbox-omgevingen worden geïsoleerd via Docker containers,
+**Sandbox-omgevingen worden geïsoleerd via containerisolatie (Docker),
 aangestuurd door de Sandbox Provisioner.**
 
-Containers bieden een aanvaardbaar evenwicht tussen
-isolatieniveau, snelheid van opstarten en beheersbaarheid
-voor een team van vier. Een container start in seconden op,
-wat de gebruikerservaring ten goede komt. De container-grenzen
-voorkomen dat een gebruiker processen of bestanden van andere
-gebruikers bereikt.
+Deze keuze wordt gemaakt omdat containerisolatie een evenwicht biedt tussen:
+- voldoende sterke isolatie voor het uirvoeren van onbetrouwbare code
+- snelle opstarttijden (seconden in plaats van minuten)
+- beheersbaarheid binnen de beperkingen van een klein team
 
-Containers worden uitgevoerd met minimale rechten: geen
-privileged mode, beperkt CPU en geheugen, geen toegang tot
-het hostnetwerk buiten de voorziene kanalen. Elke gebruikers-
-sessie krijgt een verse container die na afloop vernietigd
-wordt.
+Elke gebruikssessie krijgt een tijdelijke, geïsoleerde container 
+die na gebruik automatisch wordt beëindigd en verwijderd.
 
-Als het budget groter zou zijn, zou VM-isolatie (of een
-combinatie van VM's met containers erbinnen, zoals Firecracker)
-de voorkeur krijgen omdat de isolatiegaranties sterker zijn.
-Bij een kleiner team en budget is containerisolatie met
-strikte configuratie de meest haalbare keuze.
+Containers worden uitgevoerd met minimale rechten:
+- geen privileged mode
+- beperkte CPU- en geheugentoewijzing
+- gecontroleerde netwerktoegang
+- geen directe toegang tot host resources
 
 ## Consequences
 
 **Wat wordt mogelijk:**
-- Elke gebruikerssessie is volledig geïsoleerd
-- Omgevingen starten snel op (seconden, geen minuten)
-- De Sandbox Provisioner kan containers dynamisch aanmaken
-  en vernietigen
-- Resourcelimieten zijn per container instelbaar
+- Gebruikersomgevingen zijn logisch en technisch geïsoleerd van elkaar
+- Omgevingen kunnen snel en dynamisch worden opgestart
+- De Sandbox Provisioner kan omgevingen automatisch beheren (start/stop/herstel)
+- Resourcegebruik kan per container gecontroleerd worden
 
 **Wat extra werk vereist:**
-- Strikte Docker-configuratie is vereist: dit is geen
-  standaardinstallatie
-- Container escapes zijn een reëel risico als de configuratie
-  niet correct is: dit vereist security-review
-- Het hostbesturingssysteem moet gehard worden
+- Containerisolatie biedt minder sterke garanties dan volledige VM-isolatie
+- Foute configuratie kan leiden tot container escapes
+- Extra aandacht vereist voor beveiliging van de hostomgeving
+- Security-configuratie vraagt expliciete validatie en testing
 
 ## Governance
 
@@ -545,83 +496,92 @@ Elke aanpassing aan de container-configuratie van de Sandbox
 Provisioner vereist expliciete goedkeuring via code review.
 De configuratie wordt bijgehouden in versiebeheer. Er worden
 geen privileged containers toegestaan zonder een nieuwe ADR.
+Security-instellingen worden expliciet getest binnen POC 1 (Container Isolation).
 
 ## Notes
 
-Tekst
+Deze beslissing ondersteunt primair de karakteristiek security, 
+en in tweede instantie fault tolerance doordat falende 
+of gecompromitteerde omgevingen geïsoleerd blijven.
+Bij een groter budget of strengere security-eisen zou 
+VM-gebaseerde isolatie (bijv. Firecracker) overwogen worden 
+om sterkere isolatiegaranties te bieden. De haalbaarheid 
+van deze keuze wordt gevalideerd in POC 1.
 
 ## Title: ADR 005: Authenticatie en autorisatie
 ## Status: Proposed
 
 ## Context
 
-Het platform heeft meerdere soorten gebruikers met verschillende
-rechten: studenten kunnen challenges uitvoeren, instructors
-kunnen content aanmaken, beheerders beheren het platform.
-Elke service moet weten wie een request doet en of die persoon
-de gevraagde actie mag uitvoeren.
+Het platform ondersteunt meerdere types gebruikers met verschillende 
+rechten, zoals studenten, instructors en beheerders. Elke 
+service moet kunnen bepalen wie een request uitvoert en of deze 
+gebruiker gemachtigd is om de gevraagde actie uit te voeren.
 
-Er zijn twee benaderingen:
-- **Gedistribueerd**: elke service valideert tokens en beheert
-  rechten zelfstandig
-- **Centraal**: één dedicated service handelt authenticatie af
-  en geeft tokens uit die andere services kunnen verifiëren
+Binnen een microservices-architectuur zijn er twee mogelijke benaderingen:
+- **Gedistribueerde aanpak**: elke service beheert authenticatie en 
+  autorisatie zelfstandig
+- **Centrale aanpak**: één service verzorgt authenticatie en
+  geeft tokens uit die door andere services gevalideerd worden
+
+De keuze moet rekening houden met de karakteristieken security, 
+scalability en availability, en moet vermijden dat een centrale 
+component een bottleneck of single point of failure wordt.
 
 ## Decision
 
-**We voorzien een centrale authenticatieservice die tokens
-uitgeeft via een standaard mechanisme (JWT). Elke service
-valideert binnenkomende tokens zelfstandig aan de hand van
-een gedeelde publieke sleutel, zonder de centrale service
-opnieuw te contacteren.**
+Er wordt gekozen voor een **hybride aanpak**:
+- Een centrale authenticatieservice (User Management) verzorgt de uitgifte van tokens
+- Elke service valideert tokens lokaal zonder de authenticatieservice 
+  opnieuw te contacteren
 
-Dit is een hybride aanpak: de uitgifte van tokens is
-gecentraliseerd in User Management, de validatie is
-gedistribueerd. Dit vermijdt dat elke request door een
-centrale service moet passeren, wat een single point of
-failure zou creëren.
+Authenticatie gebeurt via JWT. Tokens bevatten gebruikersinformatie 
+en rollen, en worden ondertekend met een private sleutel. Services 
+valideren tokens aan de hand van de bijhorende publieke sleutel.
 
-Rollen worden opgenomen in het token. Een service beslist
-zelf of de rol in het token voldoende is voor de gevraagde
-actie.
+Autorisatie gebeurt op basis van rollen die in het token zijn opgenomen. 
+Elke service bepaalt zelf of een gebruiker voldoende rechten heeft 
+voor een bepaalde actie.
 
-Als het team groter of het budget hoger zou zijn, zou een
-dedicated identity provider (zoals Keycloak) worden ingezet
-in plaats van een zelfgebouwde authenticatieservice. Met het
-huidige team is een eenvoudige JWT-gebaseerde implementatie
-haalbaar en onderhoudbaar.
+Deze aanpak combineert centrale controle over identiteit met 
+gedistribueerde validatie, waardoor afhankelijkheid van één 
+service tijdens runtime wordt vermeden.
 
 ## Consequences
 
 **Wat wordt mogelijk:**
-- Geen single point of failure voor authenticatie bij elke
-  request
-- Services zijn onafhankelijk van de beschikbaarheid van
-  de authenticatieservice na het uitgifte van een token
-- Rollen zijn direct leesbaar uit het token zonder extra
-  database-call
+- Geen centrale bottleneck of SPF bij elke request
+- Services blijven operationeel zonder directe afhankelijkheid
+  van de authenticatieservice
+- Authenticatie-informatie is direct beschikbaar in het token
+- Schaalbaarheid wordt ondersteund doordat validatie lokaal gebeurt
 
 **Wat extra werk vereist:**
-- Token-expiratie en refresh-logica moeten correct worden
-  geïmplementeerd
-- Het intrekken van tokens vóór expiratie is complex
-  (geen centrale validatie meer)
-- Elke service moet de publieke sleutel kennen en updaten
-  bij rotatie
+- Token-expiratie en refresh-mechanismen moeten correct 
+  worden geïmplementeerd
+- Intrekken van tokens voor expiratie is complex
+- Sleutelbeheer vereist coördinatie
+- Elke service moet correct omgaan met tokenvalidatie en autorisatie
 
 ## Governance
 
 Tokenvalidatie wordt niet gedupliceerd per service maar
 geïmplementeerd als gedeelde bibliotheek. Wijzigingen aan
 het tokenformaat of de sleutelrotatie vereisen coördinatie
-over alle services en een nieuwe ADR.
+over alle services en een nieuwe ADR. Code reviews controleren 
+correcte implementatie van authenticatie en autorisatie.
 
 ## Notes
 
-Security is de eerste driving characteristic uit sectie 1.
-Authenticatie en autorisatie zijn de meest directe
-architecturale uitwerking van die karakteristiek op
-service-niveau.
+Deze beslissing ondersteunt primair de karakteristiek security, 
+en draagt bij aan scalability en availability door het 
+vermijden van een centrale afhankelijkheid tijdens runtime.
+
+Bij een groter team of complexere omgeving zou een externe 
+identity provider (bijv. Keycloak) overwogen worden om 
+authenticatie en autorisatie verder te standaardiseren.
+
+De haalbaarheid van deze beslissing wordt gevalideerd in POC 3 (Authentication & User Progress).
 
 # C4-diagrammen
 
