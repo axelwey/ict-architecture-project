@@ -205,7 +205,7 @@ De studentflow en de beheerderflow tonen bovendien dat inhoudelijk beheer, uitvo
 # ADR Architecturale beslissingen
 
 ## Title: ADR 001: Keuze van architecturale stijl
-## Status: Proposed
+### Status: Proposed
 
 ## Context
 
@@ -281,7 +281,7 @@ door de hogere eisen op vlak van security, fault tolerance
 en scalability.
 
 ## Title: ADR 002: Communicatie tussen services
-## Status: Proposed
+### Status: Proposed
 
 ## Context
 
@@ -360,7 +360,7 @@ Bij een kleiner team of eenvoudiger systeem zou een volledig synchrone aanpak
 eenvoudiger zijn, maar dit gaat ten koste van robuustheid en schaalbaarheid.
 
 ## Title: ADR 003: Data ownership per service
-## Status: Proposed
+### Status: Proposed
 
 ## Context
 
@@ -434,7 +434,7 @@ In de huidige context (team van vier, beperkte scope) is een
 gedeelde databaseserver met gescheiden schema’s een pragmatisch compromis.
 
 ## Title: ADR 004: Isolatie van sandbox-omgevingen
-## Status: Proposed
+### Status: Proposed
 
 ## Context
 
@@ -509,7 +509,7 @@ om sterkere isolatiegaranties te bieden. De haalbaarheid
 van deze keuze wordt gevalideerd in POC 1.
 
 ## Title: ADR 005: Authenticatie en autorisatie
-## Status: Proposed
+### Status: Proposed
 
 ## Context
 
