@@ -925,7 +925,7 @@ workspace "HackLab" "Leerplatform voor hacking via uitvoerbare voorbeelden" {
 
 ## Systeemcontextdiagram
 
-![Systeemcontextdiagram](./diagrammen/c4-context.png)
+![Systeemcontextdiagram](./diagrammen/systeemcontextdiagram_2.png)
 
 Het systeemcontextdiagram toont de twee gebruikerstypen, Student
 en Instructor en hun relatie met het HackLab-systeem als geheel.
@@ -933,7 +933,7 @@ en Instructor en hun relatie met het HackLab-systeem als geheel.
 
 ## Containerdiagram
 
-![Containerdiagram](./diagrammen/c4-container.png)
+![Containerdiagram](./diagrammen/containerdiagram2.png)
 
 Het containerdiagram toont de afzonderlijk deploybare services,
 hun onderlinge communicatie en de databanken die elk beheren.
@@ -941,6 +941,6 @@ De API Gateway is het enige synchrone toegangspunt voor de
 Web Application. 
 ## Deployment diagram
 
-![Deployment diagram](./diagrammen/c4-deployment.png)
+![Deployment diagram](./diagrammen/deploymentdiagram2.png)
 
 Het deployment diagram toont hoe de containers uit niveau 2 fysiek worden ingezet op de concrete Docker Swarm-infrastructuur.
