@@ -586,169 +586,255 @@ De haalbaarheid van deze beslissing wordt gevalideerd in POC 3 (Authentication &
 # C4-diagrammen
 
 De diagrammen zijn opgesteld volgens het C4-model en gegenereerd
-via Structurizr. De broncode hieronder is de enige bron van
-waarheid voor de diagrammen. De geëxporteerde PNG's zijn
-opgenomen via relatieve paden.
-
-## Broncode
+via Structurizr. 
 
 ```structurizr
 workspace "HackLab" "Leerplatform voor hacking via uitvoerbare voorbeelden" {
 
     model {
 
-        # Externe actoren
-        student = person "Student" "Leert hacken via uitvoerbare challenges op het platform."
-        instructor = person "Instructor" "Maakt challenges aan en publiceert deze op het platform."
-
-        # Extern systeem
-        emailProvider = softwareSystem "E-mail provider" "Verstuurt notificaties naar gebruikers bij behaalde resultaten." "External"
-
-        # Het systeem zelf
-        hacklab = softwareSystem "HackLab" "Laat gebruikers toe te leren hacken via uitvoerbare, geïsoleerde oefenomgevingen." {
-
-            # Containers
-            webApp = container "Web Application" "Levert de gebruikersinterface aan de browser." "React" "Web"
-
-            apiGateway = container "API Gateway" "Enkel toegangspunt voor externe clients. Handelt authenticatie en routing af." "Node.js"
-
-            userManagement = container "User Management Service" "Beheert gebruikersregistratie, aanmelden en rollen. Geeft JWT-tokens uit." "Node.js"
-
-            challengeCatalog = container "Challenge Catalog Service" "Beheert metadata van challenges en leerpaden." "Node.js"
-
-            contentManager = container "Content Manager Service" "Laat instructors toe challenges aan te maken en te publiceren." "Node.js"
-
-            sandboxProvisioner = container "Sandbox Provisioner Service" "Start, stopt en monitort geïsoleerde container-omgevingen per gebruikerssessie." "Python"
-
-            challengeInterface = container "Challenge Interface Service" "Beheert de terminal- of browsersessie van een gebruiker in een actieve sandbox." "Node.js"
-
-            submissionValidator = container "Submission Validator Service" "Valideert ingediende flags en antwoorden." "Node.js"
-
-            progressTracker = container "Progress Tracker Service" "Bewaart scores, voortgang en achievements per gebruiker." "Node.js"
-
-            messageBroker = container "Message Broker" "Verzorgt asynchrone communicatie tussen services." "RabbitMQ" "Queue"
-
-            # Databases
-            userDb = container "User Database" "Bewaart gebruikersdata en tokens." "PostgreSQL" "Database"
-            catalogDb = container "Catalog Database" "Bewaart challenge-metadata." "PostgreSQL" "Database"
-            contentDb = container "Content Database" "Bewaart challenge-definities." "PostgreSQL" "Database"
-            sandboxDb = container "Sandbox Database" "Bewaart staat van actieve omgevingen." "PostgreSQL" "Database"
-            submissionDb = container "Submission Database" "Bewaart ingediende antwoorden." "PostgreSQL" "Database"
-            progressDb = container "Progress Database" "Bewaart scores en voortgang." "PostgreSQL" "Database"
-
-            # Sandbox omgevingen
-            sandboxRuntime = container "Sandbox Runtime" "Geïsoleerde Docker containers waarin gebruikers hun exploits uitvoeren." "Docker" "Sandbox"
+        student = person "Student" {
+            description "Leert hacken via uitvoerbare, geïsoleerde challenges op het platform."
+            tags "User"
         }
 
-        # Relaties: externe actoren met systeem
-        student -> hacklab "Maakt gebruik van"
-        instructor -> hacklab "Beheert challenges via"
-        hacklab -> emailProvider "Verstuurt notificaties via"
+        instructor = person "Instructor" {
+            description "Maakt challenges aan, wijzigt ze en beëindigt sessies of ruimt sandboxen op."
+            tags "User"
+        }
 
-        # Relaties: actoren met containers
-        student -> webApp "Gebruikt via browser" "HTTPS"
-        instructor -> webApp "Gebruikt via browser" "HTTPS"
-        webApp -> apiGateway "Stuurt requests naar" "HTTPS/REST"
+        hacklab = softwareSystem "HackLab" {
+            description "Laat gebruikers toe te leren hacken via uitvoerbare, geïsoleerde oefenomgevingen."
 
-        # Relaties: API Gateway naar services (synchroon)
-        apiGateway -> userManagement "Authenticeert gebruiker via" "REST"
-        apiGateway -> challengeCatalog "Vraagt challenges op via" "REST"
-        apiGateway -> sandboxProvisioner "Start omgeving op via" "REST"
-        apiGateway -> challengeInterface "Verbindt gebruiker met sandbox via" "REST"
-        apiGateway -> submissionValidator "Stuurt indiening door via" "REST"
-        apiGateway -> progressTracker "Vraagt voortgang op via" "REST"
-        apiGateway -> contentManager "Stuurt challenge-aanmaak door via" "REST"
+            webApp = container "Web Application" {
+                description "Levert de gebruikersinterface aan de browser voor student en instructor."
+                technology "React 18, TypeScript, Vite"
+                tags "Web"
+            }
 
-        # Relaties: services naar databases
-        userManagement -> userDb "Leest en schrijft" "SQL"
-        challengeCatalog -> catalogDb "Leest en schrijft" "SQL"
-        contentManager -> contentDb "Leest en schrijft" "SQL"
-        sandboxProvisioner -> sandboxDb "Leest en schrijft" "SQL"
-        submissionValidator -> submissionDb "Leest en schrijft" "SQL"
-        progressTracker -> progressDb "Leest en schrijft" "SQL"
+            apiGateway = container "API Gateway" {
+                description "Enig synchroon toegangspunt. Valideert JWT lokaal, past rate limiting toe en routeert naar backend-services."
+                technology "Node.js 22, Express"
+                tags "Gateway"
+            }
 
-        # Relaties: asynchroon via message broker
-        submissionValidator -> messageBroker "Publiceert validatieresultaat" "AMQP"
-        messageBroker -> progressTracker "Levert validatieresultaat af" "AMQP"
-        contentManager -> messageBroker "Publiceert nieuwe challenge" "AMQP"
-        messageBroker -> challengeCatalog "Levert nieuwe challenge af" "AMQP"
-        sandboxProvisioner -> messageBroker "Publiceert omgevingsevents" "AMQP"
+            userManagement = container "User Management Service" {
+                description "Beheert registratie, aanmelden en rollen. Geeft ondertekende JWT-tokens uit."
+                technology "Node.js 22, Express, bcrypt, jsonwebtoken"
+                tags "Service"
+            }
 
-        # Relaties: sandbox
-        sandboxProvisioner -> sandboxRuntime "Start en vernietigt containers" "Docker API"
-        challengeInterface -> sandboxRuntime "Beheert sessie in" "WebSocket"
+            challengeCatalog = container "Challenge Catalog Service" {
+                description "Beheert en ontsluit metadata van beschikbare challenges en leerpaden."
+                technology "Node.js 22, Express"
+                tags "Service"
+            }
 
-        # Relaties: extern
-        progressTracker -> emailProvider "Stuurt notificatie via" "HTTPS"
+            contentManager = container "Content Manager Service" {
+                description "Laat de instructor toe challenges aan te maken en te wijzigen."
+                technology "Node.js 22, Express"
+                tags "Service"
+            }
 
-        # Deployment
+            sandboxProvisioner = container "Sandbox Provisioner Service" {
+                description "Start, monitort en vernietigt geïsoleerde Docker-containers per sessie."
+                technology "Python 3.12, Docker SDK"
+                tags "Service"
+            }
+
+            challengeInterface = container "Challenge Interface Service" {
+                description "Proxiet de terminalsessie tussen browser en sandbox-container."
+                technology "Node.js 22, xterm.js, WebSocket"
+                tags "Service"
+            }
+
+            submissionValidator = container "Submission Validator Service" {
+                description "Valideert ingediende flags en publiceert het resultaat asynchroon."
+                technology "Node.js 22, Express"
+                tags "Service"
+            }
+
+            progressTracker = container "Progress Tracker Service" {
+                description "Bewaart scores en voortgang. Ontvangt validatieresultaten asynchroon."
+                technology "Node.js 22, Express"
+                tags "Service"
+            }
+
+            messageBroker = container "Message Broker" {
+                description "Asynchrone event-bus tussen services (ADR 002)."
+                technology "RabbitMQ 3.13"
+                tags "Queue"
+            }
+
+            userDb = container "User Database" {
+                description "Eigendom van User Management Service."
+                technology "PostgreSQL 16"
+                tags "Database"
+            }
+
+            catalogDb = container "Catalog Database" {
+                description "Eigendom van Challenge Catalog Service."
+                technology "PostgreSQL 16"
+                tags "Database"
+            }
+
+            contentDb = container "Content Database" {
+                description "Eigendom van Content Manager Service."
+                technology "PostgreSQL 16"
+                tags "Database"
+            }
+
+            sandboxDb = container "Sandbox Database" {
+                description "Eigendom van Sandbox Provisioner Service."
+                technology "PostgreSQL 16"
+                tags "Database"
+            }
+
+            submissionDb = container "Submission Database" {
+                description "Eigendom van Submission Validator Service."
+                technology "PostgreSQL 16"
+                tags "Database"
+            }
+
+            progressDb = container "Progress Database" {
+                description "Eigendom van Progress Tracker Service."
+                technology "PostgreSQL 16"
+                tags "Database"
+            }
+
+            sandboxRuntime = container "Sandbox Runtime" {
+                description "Geïsoleerde containers per sessie. Geen netwerktoegang tot het platform. Alleen bereikbaar door Sandbox Provisioner en Challenge Interface."
+                technology "Docker, seccomp + AppArmor, internal overlay network"
+                tags "Sandbox"
+            }
+
+            webApp             -> apiGateway          "Stuurt alle API-verzoeken naar"                "HTTPS / REST"
+            apiGateway         -> userManagement       "Registratie en aanmelden via"                 "REST"
+            apiGateway         -> challengeCatalog     "Challenge-overzicht en -detail via"           "REST"
+            apiGateway         -> sandboxProvisioner   "Sessie starten en beëindigen via"             "REST"
+            apiGateway         -> challengeInterface   "Terminalsessie verbinden via"                 "REST / WebSocket"
+            apiGateway         -> submissionValidator  "Flag indienen via"                            "REST"
+            apiGateway         -> progressTracker      "Voortgang opvragen via"                       "REST"
+            apiGateway         -> contentManager       "Challenge aanmaken of wijzigen via"           "REST"
+            userManagement     -> userDb               "Leest en schrijft"                            "SQL"
+            challengeCatalog   -> catalogDb            "Leest en schrijft"                            "SQL"
+            contentManager     -> contentDb            "Leest en schrijft"                            "SQL"
+            sandboxProvisioner -> sandboxDb            "Leest en schrijft"                            "SQL"
+            submissionValidator -> submissionDb        "Leest en schrijft"                            "SQL"
+            progressTracker    -> progressDb           "Leest en schrijft"                            "SQL"
+            submissionValidator -> messageBroker       "Publiceert validatieresultaat"                "AMQP"
+            messageBroker      -> progressTracker      "Levert validatieresultaat af"                 "AMQP"
+            contentManager     -> messageBroker        "Publiceert challenge-update"                  "AMQP"
+            messageBroker      -> challengeCatalog     "Levert challenge-update af"                   "AMQP"
+            sandboxProvisioner -> messageBroker        "Publiceert sandbox-events"                    "AMQP"
+            sandboxProvisioner -> sandboxRuntime       "Start en vernietigt containers via"           "Docker API"
+            challengeInterface -> sandboxRuntime       "Proxiet I/O naar en van"                      "WebSocket"
+        }
+
+        student    -> hacklab "Leert hacken via"
+        instructor -> hacklab "Beheert challenges en sessies via"
+        student    -> webApp  "Opent platform via browser"          "HTTPS"
+        instructor -> webApp  "Beheert challenges via browser"      "HTTPS"
+
         deploymentEnvironment "Production" {
 
-            deploymentNode "Docker Swarm Cluster" "Testcluster met drie managers en twee workers." "Docker Swarm" {
+            deploymentNode "Docker Swarm Cluster" {
+                description "Vijf nodes: drie identieke managers voor Raft-consensus en hoge beschikbaarheid, twee workers exclusief voor sandbox-containers."
+                technology "Docker Swarm mode, Ubuntu 24.04 LTS"
+                tags "Cluster"
 
-                deploymentNode "Manager Node 1" "Swarm manager — beheert de cluster." "Ubuntu 24.04" {
-                    deploymentNode "API Gateway Container" "" "Docker" {
-                        containerInstance apiGateway
+                # ── Managers: identiek, Swarm verdeelt de workload ────────────
+                # Alle platform-services draaien als Swarm services met
+                # replica's verdeeld over de drie managers.
+                # Bij uitval van één manager herplaatst Swarm de containers
+                # automatisch op de overige twee.
+
+                deploymentNode "Manager Nodes (×3)" {
+                    description "Drie identieke manager nodes. Draaien samen de Raft-consensus engine. De Swarm scheduler verdeelt alle platform-services automatisch over deze drie nodes. Bij uitval van één manager herplaatst Swarm de betrokken containers op de overige managers."
+                    technology "Ubuntu 24.04 LTS, Docker Engine 27"
+                    tags "ManagerNode"
+                    instances 3
+
+                    deploymentNode "Platform Services" {
+                        description "Alle platform-services draaien als Swarm services met placement constraint node.role==manager. Replica's worden automatisch verdeeld."
+                        technology "Docker Swarm services"
+
+                        containerInstance webApp {
+                            description "2 replica's, verdeeld over de drie managers door de Swarm scheduler."
+                        }
+                        containerInstance apiGateway {
+                            description "2 replica's, verdeeld over de drie managers."
+                        }
+                        containerInstance userManagement {
+                            description "1 replica, door Swarm geplaatst op een beschikbare manager."
+                        }
+                        containerInstance challengeCatalog {
+                            description "1 replica."
+                        }
+                        containerInstance contentManager {
+                            description "1 replica."
+                        }
+                        containerInstance submissionValidator {
+                            description "1 replica."
+                        }
+                        containerInstance progressTracker {
+                            description "1 replica."
+                        }
+                        containerInstance challengeInterface {
+                            description "1 replica."
+                        }
+                        containerInstance sandboxProvisioner {
+                            description "1 replica, met toegang tot Docker socket voor sandbox-beheer."
+                        }
+                        containerInstance messageBroker {
+                            description "1 replica, named volume rabbitmq-data voor persistentie."
+                        }
                     }
-                    deploymentNode "User Management Container" "" "Docker" {
-                        containerInstance userManagement
-                    }
-                    deploymentNode "Challenge Catalog Container" "" "Docker" {
-                        containerInstance challengeCatalog
+
+                    deploymentNode "Databases" {
+                        description "Alle databases draaien als Swarm services met placement constraint op manager nodes. Named volumes garanderen persistentie."
+                        technology "Docker Swarm services, named volumes"
+
+                        containerInstance userDb {
+                            description "Named volume: user-db-data"
+                        }
+                        containerInstance catalogDb {
+                            description "Named volume: catalog-db-data"
+                        }
+                        containerInstance contentDb {
+                            description "Named volume: content-db-data"
+                        }
+                        containerInstance sandboxDb {
+                            description "Named volume: sandbox-db-data"
+                        }
+                        containerInstance submissionDb {
+                            description "Named volume: submission-db-data"
+                        }
+                        containerInstance progressDb {
+                            description "Named volume: progress-db-data"
+                        }
                     }
                 }
 
-                deploymentNode "Manager Node 2" "Swarm manager." "Ubuntu 24.04" {
-                    deploymentNode "Content Manager Container" "" "Docker" {
-                        containerInstance contentManager
-                    }
-                    deploymentNode "Submission Validator Container" "" "Docker" {
-                        containerInstance submissionValidator
-                    }
-                    deploymentNode "Progress Tracker Container" "" "Docker" {
-                        containerInstance progressTracker
-                    }
-                }
+                # ── Workers: exclusief voor sandbox-containers (ADR 004) ───────
+                # Sandbox-containers krijgen een placement constraint
+                # node.role==worker zodat ze NOOIT op een manager terechtkomen.
+                # Dit is de enige bewuste scheiding in de Swarm-topologie
+                # en vloeit rechtstreeks voort uit ADR 004.
 
-                deploymentNode "Manager Node 3" "Swarm manager." "Ubuntu 24.04" {
-                    deploymentNode "Message Broker Container" "" "Docker" {
-                        containerInstance messageBroker
-                    }
-                    deploymentNode "Web Application Container" "" "Docker" {
-                        containerInstance webApp
-                    }
-                }
+                deploymentNode "Worker Nodes (×2)" {
+                    description "Twee identieke worker nodes exclusief voor sandbox-containers. Placement constraint node.role==worker zorgt dat sandbox-containers hier terechtkomen en nooit op de managers. Bij uitval van één worker herplaatst Swarm actieve sandboxen op de andere worker."
+                    technology "Ubuntu 24.04 LTS, Docker Engine 27"
+                    tags "WorkerNode"
+                    instances 2
 
-                deploymentNode "Worker Node 1" "Swarm worker — draait sandbox-omgevingen." "Ubuntu 24.04" {
-                    deploymentNode "Sandbox Provisioner Container" "" "Docker" {
-                        containerInstance sandboxProvisioner
-                    }
-                    deploymentNode "Challenge Interface Container" "" "Docker" {
-                        containerInstance challengeInterface
-                    }
-                    deploymentNode "Sandbox Runtime Containers" "Dynamisch aangemaakte containers per gebruikerssessie." "Docker" {
-                        containerInstance sandboxRuntime
-                    }
-                }
+                    deploymentNode "Sandbox Containers" {
+                        description "Dynamisch aangemaakte containers per gebruikerssessie. Draaien in isolated_lab_net, een intern overlay-netwerk zonder egress naar platform-services of internet."
+                        technology "Docker, internal overlay network, seccomp + AppArmor"
 
-                deploymentNode "Worker Node 2" "Swarm worker — draait databases." "Ubuntu 24.04" {
-                    deploymentNode "User DB" "" "Docker" {
-                        containerInstance userDb
-                    }
-                    deploymentNode "Catalog DB" "" "Docker" {
-                        containerInstance catalogDb
-                    }
-                    deploymentNode "Content DB" "" "Docker" {
-                        containerInstance contentDb
-                    }
-                    deploymentNode "Sandbox DB" "" "Docker" {
-                        containerInstance sandboxDb
-                    }
-                    deploymentNode "Submission DB" "" "Docker" {
-                        containerInstance submissionDb
-                    }
-                    deploymentNode "Progress DB" "" "Docker" {
-                        containerInstance progressDb
+                        containerInstance sandboxRuntime {
+                            description "Per-sessie container, automatisch vernietigd na afsluiten."
+                        }
                     }
                 }
             }
@@ -758,21 +844,21 @@ workspace "HackLab" "Leerplatform voor hacking via uitvoerbare voorbeelden" {
     views {
 
         systemContext hacklab "SystemContext" {
+            title "Systeemcontextdiagram — HackLab (C4 Niveau 1)"
             include *
-            autolayout lr
-            title "Systeemcontextdiagram — HackLab"
+            autolayout lr 300 150
         }
 
         container hacklab "Containers" {
+            title "Containerdiagram — HackLab (C4 Niveau 2)"
             include *
-            autolayout lr
-            title "Containerdiagram — HackLab"
+            autolayout lr 250 100
         }
 
         deployment hacklab "Production" "Deployment" {
+            title "Deployment diagram — HackLab (C4 Niveau 3, Docker Swarm)"
             include *
-            autolayout lr
-            title "Deployment diagram — HackLab (Docker Swarm)"
+            autolayout lr 300 150
         }
 
         styles {
@@ -780,17 +866,30 @@ workspace "HackLab" "Leerplatform voor hacking via uitvoerbare voorbeelden" {
                 shape Person
                 background #1168bd
                 color #ffffff
+                fontSize 14
             }
             element "Software System" {
                 background #1168bd
                 color #ffffff
+                fontSize 14
             }
-            element "External" {
-                background #999999
+            element "Web" {
+                shape WebBrowser
+                background #438dd5
                 color #ffffff
             }
-            element "Container" {
+            element "Gateway" {
+                shape Hexagon
+                background #2e6da4
+                color #ffffff
+            }
+            element "Service" {
                 background #438dd5
+                color #ffffff
+            }
+            element "Queue" {
+                shape Pipe
+                background #e6a118
                 color #ffffff
             }
             element "Database" {
@@ -798,24 +897,31 @@ workspace "HackLab" "Leerplatform voor hacking via uitvoerbare voorbeelden" {
                 background #438dd5
                 color #ffffff
             }
-            element "Queue" {
-                shape Pipe
-                background #438dd5
-                color #ffffff
-            }
-            element "Web" {
-                shape WebBrowser
-                background #438dd5
-                color #ffffff
-            }
             element "Sandbox" {
                 background #e03030
                 color #ffffff
+                border Dashed
+            }
+            element "ManagerNode" {
+                background #0c3d6e
+                color #ffffff
+            }
+            element "WorkerNode" {
+                background #7a1f1f
+                color #ffffff
+            }
+            element "Cluster" {
+                background #e8f0f8
+                color #1a1a1a
+                border Dashed
             }
         }
+
+        theme default
     }
 }
 ```
+
 
 ## Systeemcontextdiagram
 
@@ -823,7 +929,7 @@ workspace "HackLab" "Leerplatform voor hacking via uitvoerbare voorbeelden" {
 
 Het systeemcontextdiagram toont de twee gebruikerstypen, Student
 en Instructor en hun relatie met het HackLab-systeem als geheel.
-Een externe e-mailprovider wordt aangesproken voor notificaties.
+
 
 ## Containerdiagram
 
@@ -832,17 +938,9 @@ Een externe e-mailprovider wordt aangesproken voor notificaties.
 Het containerdiagram toont de afzonderlijk deploybare services,
 hun onderlinge communicatie en de databanken die elk beheren.
 De API Gateway is het enige synchrone toegangspunt voor de
-Web Application. Asynchrone communicatie verloopt via de
-Message Broker. De Sandbox Runtime is rood gemarkeerd omdat
-deze de veiligheidsgrens van het systeem vormt.
-
+Web Application. 
 ## Deployment diagram
 
 ![Deployment diagram](./diagrammen/c4-deployment.png)
 
-Het deployment diagram toont de verdeling over de Docker Swarm
-testcluster van drie managers en twee workers. Worker Node 1
-draait uitsluitend de sandbox-gerelateerde containers omdat
-deze het zwaarst belast worden en de grootste veiligheidsrisico's
-vormen. Worker Node 2 draait uitsluitend de databases.
-
+Het deployment diagram toont hoe de containers uit niveau 2 fysiek worden ingezet op de concrete Docker Swarm-infrastructuur.

@@ -1,0 +1,333 @@
+```structurizr
+workspace "HackLab" "Leerplatform voor hacking via uitvoerbare voorbeelden" {
+
+    model {
+
+        student = person "Student" {
+            description "Leert hacken via uitvoerbare, geïsoleerde challenges op het platform."
+            tags "User"
+        }
+
+        instructor = person "Instructor" {
+            description "Maakt challenges aan, wijzigt ze en beëindigt sessies of ruimt sandboxen op."
+            tags "User"
+        }
+
+        hacklab = softwareSystem "HackLab" {
+            description "Laat gebruikers toe te leren hacken via uitvoerbare, geïsoleerde oefenomgevingen."
+
+            webApp = container "Web Application" {
+                description "Levert de gebruikersinterface aan de browser voor student en instructor."
+                technology "React 18, TypeScript, Vite"
+                tags "Web"
+            }
+
+            apiGateway = container "API Gateway" {
+                description "Enig synchroon toegangspunt. Valideert JWT lokaal, past rate limiting toe en routeert naar backend-services."
+                technology "Node.js 22, Express"
+                tags "Gateway"
+            }
+
+            userManagement = container "User Management Service" {
+                description "Beheert registratie, aanmelden en rollen. Geeft ondertekende JWT-tokens uit."
+                technology "Node.js 22, Express, bcrypt, jsonwebtoken"
+                tags "Service"
+            }
+
+            challengeCatalog = container "Challenge Catalog Service" {
+                description "Beheert en ontsluit metadata van beschikbare challenges en leerpaden."
+                technology "Node.js 22, Express"
+                tags "Service"
+            }
+
+            contentManager = container "Content Manager Service" {
+                description "Laat de instructor toe challenges aan te maken en te wijzigen."
+                technology "Node.js 22, Express"
+                tags "Service"
+            }
+
+            sandboxProvisioner = container "Sandbox Provisioner Service" {
+                description "Start, monitort en vernietigt geïsoleerde Docker-containers per sessie."
+                technology "Python 3.12, Docker SDK"
+                tags "Service"
+            }
+
+            challengeInterface = container "Challenge Interface Service" {
+                description "Proxiet de terminalsessie tussen browser en sandbox-container."
+                technology "Node.js 22, xterm.js, WebSocket"
+                tags "Service"
+            }
+
+            submissionValidator = container "Submission Validator Service" {
+                description "Valideert ingediende flags en publiceert het resultaat asynchroon."
+                technology "Node.js 22, Express"
+                tags "Service"
+            }
+
+            progressTracker = container "Progress Tracker Service" {
+                description "Bewaart scores en voortgang. Ontvangt validatieresultaten asynchroon."
+                technology "Node.js 22, Express"
+                tags "Service"
+            }
+
+            messageBroker = container "Message Broker" {
+                description "Asynchrone event-bus tussen services (ADR 002)."
+                technology "RabbitMQ 3.13"
+                tags "Queue"
+            }
+
+            userDb = container "User Database" {
+                description "Eigendom van User Management Service."
+                technology "PostgreSQL 16"
+                tags "Database"
+            }
+
+            catalogDb = container "Catalog Database" {
+                description "Eigendom van Challenge Catalog Service."
+                technology "PostgreSQL 16"
+                tags "Database"
+            }
+
+            contentDb = container "Content Database" {
+                description "Eigendom van Content Manager Service."
+                technology "PostgreSQL 16"
+                tags "Database"
+            }
+
+            sandboxDb = container "Sandbox Database" {
+                description "Eigendom van Sandbox Provisioner Service."
+                technology "PostgreSQL 16"
+                tags "Database"
+            }
+
+            submissionDb = container "Submission Database" {
+                description "Eigendom van Submission Validator Service."
+                technology "PostgreSQL 16"
+                tags "Database"
+            }
+
+            progressDb = container "Progress Database" {
+                description "Eigendom van Progress Tracker Service."
+                technology "PostgreSQL 16"
+                tags "Database"
+            }
+
+            sandboxRuntime = container "Sandbox Runtime" {
+                description "Geïsoleerde containers per sessie. Geen netwerktoegang tot het platform. Alleen bereikbaar door Sandbox Provisioner en Challenge Interface."
+                technology "Docker, seccomp + AppArmor, internal overlay network"
+                tags "Sandbox"
+            }
+
+            webApp             -> apiGateway          "Stuurt alle API-verzoeken naar"                "HTTPS / REST"
+            apiGateway         -> userManagement       "Registratie en aanmelden via"                 "REST"
+            apiGateway         -> challengeCatalog     "Challenge-overzicht en -detail via"           "REST"
+            apiGateway         -> sandboxProvisioner   "Sessie starten en beëindigen via"             "REST"
+            apiGateway         -> challengeInterface   "Terminalsessie verbinden via"                 "REST / WebSocket"
+            apiGateway         -> submissionValidator  "Flag indienen via"                            "REST"
+            apiGateway         -> progressTracker      "Voortgang opvragen via"                       "REST"
+            apiGateway         -> contentManager       "Challenge aanmaken of wijzigen via"           "REST"
+            userManagement     -> userDb               "Leest en schrijft"                            "SQL"
+            challengeCatalog   -> catalogDb            "Leest en schrijft"                            "SQL"
+            contentManager     -> contentDb            "Leest en schrijft"                            "SQL"
+            sandboxProvisioner -> sandboxDb            "Leest en schrijft"                            "SQL"
+            submissionValidator -> submissionDb        "Leest en schrijft"                            "SQL"
+            progressTracker    -> progressDb           "Leest en schrijft"                            "SQL"
+            submissionValidator -> messageBroker       "Publiceert validatieresultaat"                "AMQP"
+            messageBroker      -> progressTracker      "Levert validatieresultaat af"                 "AMQP"
+            contentManager     -> messageBroker        "Publiceert challenge-update"                  "AMQP"
+            messageBroker      -> challengeCatalog     "Levert challenge-update af"                   "AMQP"
+            sandboxProvisioner -> messageBroker        "Publiceert sandbox-events"                    "AMQP"
+            sandboxProvisioner -> sandboxRuntime       "Start en vernietigt containers via"           "Docker API"
+            challengeInterface -> sandboxRuntime       "Proxiet I/O naar en van"                      "WebSocket"
+        }
+
+        student    -> hacklab "Leert hacken via"
+        instructor -> hacklab "Beheert challenges en sessies via"
+        student    -> webApp  "Opent platform via browser"          "HTTPS"
+        instructor -> webApp  "Beheert challenges via browser"      "HTTPS"
+
+        deploymentEnvironment "Production" {
+
+            deploymentNode "Docker Swarm Cluster" {
+                description "Vijf nodes: drie identieke managers voor Raft-consensus en hoge beschikbaarheid, twee workers exclusief voor sandbox-containers."
+                technology "Docker Swarm mode, Ubuntu 24.04 LTS"
+                tags "Cluster"
+
+                # ── Managers: identiek, Swarm verdeelt de workload ────────────
+                # Alle platform-services draaien als Swarm services met
+                # replica's verdeeld over de drie managers.
+                # Bij uitval van één manager herplaatst Swarm de containers
+                # automatisch op de overige twee.
+
+                deploymentNode "Manager Nodes (×3)" {
+                    description "Drie identieke manager nodes. Draaien samen de Raft-consensus engine. De Swarm scheduler verdeelt alle platform-services automatisch over deze drie nodes. Bij uitval van één manager herplaatst Swarm de betrokken containers op de overige managers."
+                    technology "Ubuntu 24.04 LTS, Docker Engine 27"
+                    tags "ManagerNode"
+                    instances 3
+
+                    deploymentNode "Platform Services" {
+                        description "Alle platform-services draaien als Swarm services met placement constraint node.role==manager. Replica's worden automatisch verdeeld."
+                        technology "Docker Swarm services"
+
+                        containerInstance webApp {
+                            description "2 replica's, verdeeld over de drie managers door de Swarm scheduler."
+                        }
+                        containerInstance apiGateway {
+                            description "2 replica's, verdeeld over de drie managers."
+                        }
+                        containerInstance userManagement {
+                            description "1 replica, door Swarm geplaatst op een beschikbare manager."
+                        }
+                        containerInstance challengeCatalog {
+                            description "1 replica."
+                        }
+                        containerInstance contentManager {
+                            description "1 replica."
+                        }
+                        containerInstance submissionValidator {
+                            description "1 replica."
+                        }
+                        containerInstance progressTracker {
+                            description "1 replica."
+                        }
+                        containerInstance challengeInterface {
+                            description "1 replica."
+                        }
+                        containerInstance sandboxProvisioner {
+                            description "1 replica, met toegang tot Docker socket voor sandbox-beheer."
+                        }
+                        containerInstance messageBroker {
+                            description "1 replica, named volume rabbitmq-data voor persistentie."
+                        }
+                    }
+
+                    deploymentNode "Databases" {
+                        description "Alle databases draaien als Swarm services met placement constraint op manager nodes. Named volumes garanderen persistentie."
+                        technology "Docker Swarm services, named volumes"
+
+                        containerInstance userDb {
+                            description "Named volume: user-db-data"
+                        }
+                        containerInstance catalogDb {
+                            description "Named volume: catalog-db-data"
+                        }
+                        containerInstance contentDb {
+                            description "Named volume: content-db-data"
+                        }
+                        containerInstance sandboxDb {
+                            description "Named volume: sandbox-db-data"
+                        }
+                        containerInstance submissionDb {
+                            description "Named volume: submission-db-data"
+                        }
+                        containerInstance progressDb {
+                            description "Named volume: progress-db-data"
+                        }
+                    }
+                }
+
+                # ── Workers: exclusief voor sandbox-containers (ADR 004) ───────
+                # Sandbox-containers krijgen een placement constraint
+                # node.role==worker zodat ze NOOIT op een manager terechtkomen.
+                # Dit is de enige bewuste scheiding in de Swarm-topologie
+                # en vloeit rechtstreeks voort uit ADR 004.
+
+                deploymentNode "Worker Nodes (×2)" {
+                    description "Twee identieke worker nodes exclusief voor sandbox-containers. Placement constraint node.role==worker zorgt dat sandbox-containers hier terechtkomen en nooit op de managers. Bij uitval van één worker herplaatst Swarm actieve sandboxen op de andere worker."
+                    technology "Ubuntu 24.04 LTS, Docker Engine 27"
+                    tags "WorkerNode"
+                    instances 2
+
+                    deploymentNode "Sandbox Containers" {
+                        description "Dynamisch aangemaakte containers per gebruikerssessie. Draaien in isolated_lab_net, een intern overlay-netwerk zonder egress naar platform-services of internet."
+                        technology "Docker, internal overlay network, seccomp + AppArmor"
+
+                        containerInstance sandboxRuntime {
+                            description "Per-sessie container, automatisch vernietigd na afsluiten."
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    views {
+
+        systemContext hacklab "SystemContext" {
+            title "Systeemcontextdiagram — HackLab (C4 Niveau 1)"
+            include *
+            autolayout lr 300 150
+        }
+
+        container hacklab "Containers" {
+            title "Containerdiagram — HackLab (C4 Niveau 2)"
+            include *
+            autolayout lr 250 100
+        }
+
+        deployment hacklab "Production" "Deployment" {
+            title "Deployment diagram — HackLab (C4 Niveau 3, Docker Swarm)"
+            include *
+            autolayout lr 300 150
+        }
+
+        styles {
+            element "Person" {
+                shape Person
+                background #1168bd
+                color #ffffff
+                fontSize 14
+            }
+            element "Software System" {
+                background #1168bd
+                color #ffffff
+                fontSize 14
+            }
+            element "Web" {
+                shape WebBrowser
+                background #438dd5
+                color #ffffff
+            }
+            element "Gateway" {
+                shape Hexagon
+                background #2e6da4
+                color #ffffff
+            }
+            element "Service" {
+                background #438dd5
+                color #ffffff
+            }
+            element "Queue" {
+                shape Pipe
+                background #e6a118
+                color #ffffff
+            }
+            element "Database" {
+                shape Cylinder
+                background #438dd5
+                color #ffffff
+            }
+            element "Sandbox" {
+                background #e03030
+                color #ffffff
+                border Dashed
+            }
+            element "ManagerNode" {
+                background #0c3d6e
+                color #ffffff
+            }
+            element "WorkerNode" {
+                background #7a1f1f
+                color #ffffff
+            }
+            element "Cluster" {
+                background #e8f0f8
+                color #1a1a1a
+                border Dashed
+            }
+        }
+
+        theme default
+    }
+}
+```
