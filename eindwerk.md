@@ -933,7 +933,7 @@ en Instructor en hun relatie met het HackLab-systeem als geheel.
 
 ## Containerdiagram
 
-![Containerdiagram](./diagrammen/containerdiagram2.png)
+![Containerdiagram](./diagrammen/d3Containers.png)
 
 Het containerdiagram toont de afzonderlijk deploybare services,
 hun onderlinge communicatie en de databanken die elk beheren.
@@ -941,6 +941,6 @@ De API Gateway is het enige synchrone toegangspunt voor de
 Web Application. 
 ## Deployment diagram
 
-![Deployment diagram](./diagrammen/deploymentdiagram2.png)
+![Deployment diagram](./diagrammen/d3Deployment.png)
 
 Het deployment diagram toont hoe de containers uit niveau 2 fysiek worden ingezet op de concrete Docker Swarm-infrastructuur.
