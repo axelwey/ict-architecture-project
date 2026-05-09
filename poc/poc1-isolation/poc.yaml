@@ -1,1 +1,12 @@
-hey
+services:
+  sandbox:
+    build: .
+    container_name: sandbox-poc
+    stdin_open: true
+    tty: true
+
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
