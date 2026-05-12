@@ -1,0 +1,8 @@
+{
+  "name": "submission-validator",
+  "version": "1.0.0",
+  "dependencies": {
+    "amqplib": "^0.10.4",
+    "express": "^4.19.2"
+  }
+}
