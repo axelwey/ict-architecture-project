@@ -1,0 +1,74 @@
+# HackLab POC 3 - Distributed JWT Validation
+# Deploy met:  docker stack deploy -c poc.yaml poc
+#
+# RSA-keys worden via Docker Swarm secrets verspreid:
+#   - jwt_private_key  -> enkel naar user-management
+#   - jwt_public_key   -> naar gateway, catalog, validator
+#
+# Dit is exact wat ADR 005 vraagt: private key gecentraliseerd,
+# public key gedistribueerd.
+
+version: "3.8"
+
+secrets:
+  jwt_private_key:
+    file: ./keys/private.pem
+  jwt_public_key:
+    file: ./keys/public.pem
+
+networks:
+  hacklab-net:
+    driver: overlay
+
+services:
+  user-management:
+    image: hacklab/user-management:poc3
+    networks:
+      - hacklab-net
+    ports:
+      - "8003:3000"
+    secrets:
+      - jwt_private_key
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  gateway:
+    image: hacklab/gateway:poc3
+    networks:
+      - hacklab-net
+    ports:
+      - "8000:3000"
+    secrets:
+      - jwt_public_key
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  challenge-catalog:
+    image: hacklab/challenge-catalog:poc3
+    networks:
+      - hacklab-net
+    ports:
+      - "8001:3000"
+    secrets:
+      - jwt_public_key
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  submission-validator:
+    image: hacklab/submission-validator:poc3
+    networks:
+      - hacklab-net
+    ports:
+      - "8002:3000"
+    secrets:
+      - jwt_public_key
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
