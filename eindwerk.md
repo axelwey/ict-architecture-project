@@ -102,8 +102,6 @@ De interacties van de student worden afzonderlijk weergegeven zodat de volledige
 
 In deze flow registreert en authenticatieert de student zich eerst via het platform. Daarna worden profiel en niveau ingesteld. Vervolgens vraagt de student het challenge-overzicht op, selecteert een challenge en start een oefensessie. Het platform laat daarvoor een sandbox klaarzetten. Tijdens de sessie voert de student code of exploits uit en dient daarna een oplossing of flag in. Ten slotte wordt de oplossing gevalideerd, de voortgang bijgewerkt en de geactualiseerde voortgang opnieuw aan de student getoond.
 
-Dit diagram bevat alle studentacties uit het use-case diagram: registreren, aanmelden, profiel of niveau instellen, challenges bekijken, challenges selecteren, een oefensessie starten, code of exploit uitvoeren, een oplossing of flag indienen en de voortgang bekijken.
-
 ## Sequence diagram van de beheerder
 
 De beheerder krijgt een afzonderlijk sequence diagram, omdat deze actor een andere verantwoordelijkheid heeft dan de student en geen leerflow doorloopt.
@@ -111,8 +109,6 @@ De beheerder krijgt een afzonderlijk sequence diagram, omdat deze actor een ande
 ![Sequence diagram beheerder](./diagrammen/sequencediagram-beheerder.png)
 
 De beheerder meldt zich eerst aan op het platform. Daarna kan een nieuwe challenge worden aangemaakt of kan een bestaande challenge worden gewijzigd. Deze wijzigingen worden verwerkt en zichtbaar gemaakt in de challengecatalogus. Daarnaast kan de beheerder een actieve sessie beëindigen en een sandbox laten opruimen of resetten.
-
-Ook dit diagram bevat alle beheerderacties uit het use-case diagram: aanmelden, challenge aanmaken, challenge wijzigen, sessie beëindigen en sandbox opruimen.
 
 ## Afleiding van de logische componenten
 
