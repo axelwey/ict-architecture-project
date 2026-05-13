@@ -970,25 +970,25 @@ Het deployment diagram toont hoe de containers uit niveau 2 fysiek worden ingeze
 
 # Proofs of Concept
 
-## POC 1 — Container Isolation
+## POC 1: Container Isolation
 Valideert ADR 004. Toont aan dat Docker-containers als geïsoleerde 
 sandbox kunnen dienen: geen privileged mode, beperkte resources, 
 automatische opruiming na gebruik.
 Zie README.md in de poc directory.
 
-## POC 2 — Sandbox Failure Recovery
+## POC 2: Sandbox Failure Recovery
 Valideert ADR 001 en ADR 004. Toont aan dat een crash in één sandbox 
 beperkt blijft en dat de Sandbox Provisioner dit detecteert en herstelt, 
 zonder impact op andere actieve sandboxen.
 Zie README.md in de poc directory.
 
-## POC 3 — Distributed JWT Validation
+## POC 3: Distributed JWT Validation
 Valideert ADR 005. Toont aan dat JWT-tokens centraal uitgegeven worden 
 (RS256, private key) en gedistribueerd gevalideerd worden (public key), 
 zonder runtime-afhankelijkheid van de centrale service.
 Zie README.md in de poc directory.
 
-## POC 4 — Asynchrone Voortgangsregistratie
+## POC 4: Asynchrone Voortgangsregistratie
 Valideert ADR 002 en ADR 003. Toont aan dat een flag-indiening asynchroon 
 verwerkt wordt via RabbitMQ: de student krijgt direct feedback, terwijl de 
 Progress Tracker op de achtergrond bijgewerkt wordt, ook bij tijdelijke uitval.
