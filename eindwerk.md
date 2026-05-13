@@ -198,10 +198,28 @@ De gekozen opdeling volgt de natuurlijke scheiding tussen toegang, leerinformati
 
 De studentflow en de beheerderflow tonen bovendien dat inhoudelijk beheer, uitvoering van challengecode en toegangscontrole niet in éénzelfde component thuishoren. Door die verantwoordelijkheden te scheiden ontstaat een duidelijker en beter verdedigbaar logisch model van het platform.
 
+## Van logische componenten naar containers
+
+De logische componenten uit de vorige sectie zijn de conceptuele
+bouwblokken van het systeem. In de C4-diagrammen worden deze
+vertaald naar concrete, deploybare containers. De namen
+verschillen bewust: de logische naam beschrijft de verantwoordelijkheid,
+de containernaam beschrijft de implementatie.
+
+| Logische component    | Container                        |
+|-----------------------|----------------------------------|
+| Identity & Access     | User Management Service          |
+| Profile & Learning Path | Progress Tracker Service       |
+| Challenge Catalog     | Challenge Catalog Service        |
+| Session Orchestrator  | Sandbox Provisioner Service      |
+| Sandbox Runtime       | Sandbox Runtime                  |
+| Evaluation & Scoring  | Submission Validator Service     |
+| Content Authoring     | Content Manager Service          |
+
 # ADR Architecturale beslissingen
 
 ## Title: ADR 001: Keuze van architecturale stijl
-### Status: Proposed
+### Status: Accepted
 
 ## Context
 
@@ -277,7 +295,7 @@ door de hogere eisen op vlak van security, fault tolerance
 en scalability.
 
 ## Title: ADR 002: Communicatie tussen services
-### Status: Proposed
+### Status: Accepted
 
 ## Context
 
@@ -356,7 +374,7 @@ Bij een kleiner team of eenvoudiger systeem zou een volledig synchrone aanpak
 eenvoudiger zijn, maar dit gaat ten koste van robuustheid en schaalbaarheid.
 
 ## Title: ADR 003: Data ownership per service
-### Status: Proposed
+### Status: Accepted
 
 ## Context
 
@@ -388,7 +406,6 @@ via gedeelde databanktables.
 Concreet betekent dit:
 - User Management beheert het gebruikersschema
 - Challenge Catalog beheert de challenge-metadata
-- Sandbox Provisioner beheert de staat van actieve omgevingen
 - Submission Validator beheert de ingediende antwoorden
 - Progress Tracker beheert scores en voortgang per gebruiker
 - Content Manager beheert de ruwe challenge-definities
@@ -430,7 +447,8 @@ In de huidige context (team van vier, beperkte scope) is een
 gedeelde databaseserver met gescheiden schema’s een pragmatisch compromis.
 
 ## Title: ADR 004: Isolatie van sandbox-omgevingen
-### Status: Proposed
+### Status: Accepted
+
 
 ## Context
 
@@ -505,7 +523,7 @@ om sterkere isolatiegaranties te bieden. De haalbaarheid
 van deze keuze wordt gevalideerd in POC 1.
 
 ## Title: ADR 005: Authenticatie en autorisatie
-### Status: Proposed
+### Status: Accepted 
 
 ## Context
 
@@ -934,9 +952,44 @@ en Instructor en hun relatie met het HackLab-systeem als geheel.
 Het containerdiagram toont de afzonderlijk deploybare services,
 hun onderlinge communicatie en de databanken die elk beheren.
 De API Gateway is het enige synchrone toegangspunt voor de
-Web Application. 
+Web Application. Asynchrone communicatie verloopt via de Message Broker.
+
+**Legende:**
+- Volle lijn: synchrone communicatie (REST)
+- Stippellijn: asynchrone communicatie (AMQP via Message Broker)
+- Blauw: services en databases
+- Oranje: Message Broker (asynchrone event-bus)
+- Rood: Sandbox Runtime (geïsoleerde uitvoeringsomgeving voor onbetrouwbare code)
+- Zeshoek: API Gateway (enkel extern toegangspunt)
+
 ## Deployment diagram
 
 ![Deployment diagram](./diagrammen/d3Deployment.png)
 
 Het deployment diagram toont hoe de containers uit niveau 2 fysiek worden ingezet op de concrete Docker Swarm-infrastructuur.
+
+# Proofs of Concept
+
+## POC 1 — Container Isolation
+Valideert ADR 004. Toont aan dat Docker-containers als geïsoleerde 
+sandbox kunnen dienen: geen privileged mode, beperkte resources, 
+automatische opruiming na gebruik.
+Zie README.md in de poc directory.
+
+## POC 2 — Sandbox Failure Recovery
+Valideert ADR 001 en ADR 004. Toont aan dat een crash in één sandbox 
+beperkt blijft en dat de Sandbox Provisioner dit detecteert en herstelt, 
+zonder impact op andere actieve sandboxen.
+Zie README.md in de poc directory.
+
+## POC 3 — Distributed JWT Validation
+Valideert ADR 005. Toont aan dat JWT-tokens centraal uitgegeven worden 
+(RS256, private key) en gedistribueerd gevalideerd worden (public key), 
+zonder runtime-afhankelijkheid van de centrale service.
+Zie README.md in de poc directory.
+
+## POC 4 — Asynchrone Voortgangsregistratie
+Valideert ADR 002 en ADR 003. Toont aan dat een flag-indiening asynchroon 
+verwerkt wordt via RabbitMQ: de student krijgt direct feedback, terwijl de 
+Progress Tracker op de achtergrond bijgewerkt wordt, ook bij tijdelijke uitval.
+Zie README.md in de poc directory.
