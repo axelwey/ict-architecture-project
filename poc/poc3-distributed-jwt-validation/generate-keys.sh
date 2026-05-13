@@ -27,3 +27,13 @@ chmod 644 keys/public.pem
 echo "RSA-keypair gegenereerd in ./keys/"
 echo "  private.pem  (gevoelig - enkel user-management)"
 echo "  public.pem   (gedeeld met gateway, catalog, validator)"
+
+if [ ! -f users.json ]; then
+    cat > users.json << 'EOF'
+{
+  "student": {"password": "student123", "role": "student"},
+  "instructor": {"password": "instructor123", "role": "instructor"}
+}
+EOF
+    echo "users.json aangemaakt (niet in versiebeheer)"
+fi

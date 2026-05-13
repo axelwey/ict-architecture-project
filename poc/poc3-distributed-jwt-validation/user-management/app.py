@@ -10,7 +10,7 @@ Andere services hebben enkel de public key en valideren zelfstandig.
 """
 
 import time
-
+import json
 import jwt
 from flask import Flask, jsonify, request
 
@@ -21,12 +21,11 @@ PRIVATE_KEY_PATH = "/run/secrets/jwt_private_key"
 with open(PRIVATE_KEY_PATH, "rb") as f:
     PRIVATE_KEY = f.read()
 
-# Hardcoded gebruikers voor de POC.
-# In productie zou dit een database zijn (zie ADR 003: data ownership).
-USERS = {
-    "student": {"password": "student123", "role": "student"},
-    "instructor": {"password": "instructor123", "role": "instructor"},
-}
+# Gebruikers worden ingelezen uit een Docker Swarm secret.
+# Zelfde patroon als de RSA-keys. Zie poc.yaml en generate-keys.sh.
+USERS_PATH = "/run/secrets/users"
+with open(USERS_PATH) as f:
+    USERS = json.load(f)
 
 TOKEN_EXPIRY_SECONDS = 3600  # 1 uur
 

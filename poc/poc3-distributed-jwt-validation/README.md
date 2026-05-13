@@ -93,7 +93,7 @@ poc-3-distributed-jwt-validation/
 ## Opstarten
 
 ```bash
-# 1) Genereer de RSA-keypair
+# 1) Genereer de RSA-keypair én maak users.json aan
 chmod +x generate-keys.sh build-images.sh test-poc.sh
 ./generate-keys.sh
 

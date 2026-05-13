@@ -15,6 +15,8 @@ secrets:
     file: ./keys/private.pem
   jwt_public_key:
     file: ./keys/public.pem
+  users:
+    file: ./users.json
 
 networks:
   hacklab-net:
@@ -29,6 +31,7 @@ services:
       - "8003:3000"
     secrets:
       - jwt_private_key
+      - users
     deploy:
       replicas: 1
       restart_policy:
