@@ -698,12 +698,6 @@ workspace "HackLab" "Leerplatform voor hacking via uitvoerbare voorbeelden" {
                 tags "Database"
             }
 
-            sandboxDb = container "Sandbox Database" {
-                description "Eigendom van Sandbox Provisioner Service."
-                technology "PostgreSQL 16"
-                tags "Database"
-            }
-
             submissionDb = container "Submission Database" {
                 description "Eigendom van Submission Validator Service."
                 technology "PostgreSQL 16"
@@ -722,27 +716,26 @@ workspace "HackLab" "Leerplatform voor hacking via uitvoerbare voorbeelden" {
                 tags "Sandbox"
             }
 
-            webApp             -> apiGateway          "Stuurt alle API-verzoeken naar"                "HTTPS / REST"
-            apiGateway         -> userManagement       "Registratie en aanmelden via"                 "REST"
-            apiGateway         -> challengeCatalog     "Challenge-overzicht en -detail via"           "REST"
-            apiGateway         -> sandboxProvisioner   "Sessie starten en beëindigen via"             "REST"
-            apiGateway         -> challengeInterface   "Terminalsessie verbinden via"                 "REST / WebSocket"
-            apiGateway         -> submissionValidator  "Flag indienen via"                            "REST"
-            apiGateway         -> progressTracker      "Voortgang opvragen via"                       "REST"
-            apiGateway         -> contentManager       "Challenge aanmaken of wijzigen via"           "REST"
-            userManagement     -> userDb               "Leest en schrijft"                            "SQL"
-            challengeCatalog   -> catalogDb            "Leest en schrijft"                            "SQL"
-            contentManager     -> contentDb            "Leest en schrijft"                            "SQL"
-            sandboxProvisioner -> sandboxDb            "Leest en schrijft"                            "SQL"
-            submissionValidator -> submissionDb        "Leest en schrijft"                            "SQL"
-            progressTracker    -> progressDb           "Leest en schrijft"                            "SQL"
-            submissionValidator -> messageBroker       "Publiceert validatieresultaat"                "AMQP"
-            messageBroker      -> progressTracker      "Levert validatieresultaat af"                 "AMQP"
-            contentManager     -> messageBroker        "Publiceert challenge-update"                  "AMQP"
-            messageBroker      -> challengeCatalog     "Levert challenge-update af"                   "AMQP"
-            sandboxProvisioner -> messageBroker        "Publiceert sandbox-events"                    "AMQP"
-            sandboxProvisioner -> sandboxRuntime       "Start en vernietigt containers via"           "Docker API"
-            challengeInterface -> sandboxRuntime       "Proxiet I/O naar en van"                      "WebSocket"
+            webApp             -> apiGateway          "Stuurt alle API-verzoeken naar"                "HTTPS / REST"      "Sync"
+            apiGateway         -> userManagement       "Registratie en aanmelden via"                 "REST" "Sync"
+            apiGateway         -> challengeCatalog     "Challenge-overzicht en -detail via"           "REST" "Sync"
+            apiGateway         -> sandboxProvisioner   "Sessie starten en beëindigen via"             "REST" "Sync"
+            apiGateway         -> challengeInterface   "Terminalsessie verbinden via"                 "REST / WebSocket" "Async"
+            apiGateway         -> submissionValidator  "Flag indienen via"                            "REST" "Sync"
+            apiGateway         -> progressTracker      "Voortgang opvragen via"                       "REST" "Sync"
+            apiGateway         -> contentManager       "Challenge aanmaken of wijzigen via"           "REST" "Sync"
+            userManagement     -> userDb               "Leest en schrijft"                            "SQL" "Sync"
+            challengeCatalog   -> catalogDb            "Leest en schrijft"                            "SQL" "Sync"
+            contentManager     -> contentDb            "Leest en schrijft"                            "SQL" "Sync"
+            submissionValidator -> submissionDb        "Leest en schrijft"                            "SQL" "Sync"
+            progressTracker    -> progressDb           "Leest en schrijft"                            "SQL" "Sync"
+            submissionValidator -> messageBroker       "Publiceert validatieresultaat"                "AMQP" "Async"
+            messageBroker      -> progressTracker      "Levert validatieresultaat af"                 "AMQP" "Async"
+            contentManager     -> messageBroker        "Publiceert challenge-update"                  "AMQP" "Async"
+            messageBroker      -> challengeCatalog     "Levert challenge-update af"                   "AMQP" "Async"
+            sandboxProvisioner -> messageBroker        "Publiceert sandbox-events"                    "AMQP" "Async"
+            sandboxProvisioner -> sandboxRuntime       "Start en vernietigt containers via"           "Docker API" "Sync"
+            challengeInterface -> sandboxRuntime       "Proxiet I/O naar en van"                      "WebSocket" "Async"
         }
 
         student    -> hacklab "Leert hacken via"
@@ -818,9 +811,7 @@ workspace "HackLab" "Leerplatform voor hacking via uitvoerbare voorbeelden" {
                         containerInstance contentDb {
                             description "Named volume: content-db-data"
                         }
-                        containerInstance sandboxDb {
-                            description "Named volume: sandbox-db-data"
-                        }
+
                         containerInstance submissionDb {
                             description "Named volume: submission-db-data"
                         }
@@ -929,6 +920,14 @@ workspace "HackLab" "Leerplatform voor hacking via uitvoerbare voorbeelden" {
                 color #1a1a1a
                 border Dashed
             }
+            
+            relationship "Sync" {
+                dashed false
+            }
+
+            relationship "Async" {
+                dashed true
+            }
         }
 
         theme default
@@ -947,7 +946,7 @@ en Instructor en hun relatie met het HackLab-systeem als geheel.
 
 ## Containerdiagram
 
-![Containerdiagram](./diagrammen/d3Containers.png)
+![Containerdiagram](./diagrammen/d4Containers.png)
 
 Het containerdiagram toont de afzonderlijk deploybare services,
 hun onderlinge communicatie en de databanken die elk beheren.
