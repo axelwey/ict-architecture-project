@@ -135,103 +135,128 @@ workspace "HackLab" "Leerplatform voor hacking via uitvoerbare voorbeelden" {
 
         student    -> hacklab "Leert hacken via"
         instructor -> hacklab "Beheert challenges en sessies via"
-        student    -> webApp  "Opent platform via browser"          "HTTPS"
-        instructor -> webApp  "Beheert challenges via browser"      "HTTPS"
+        student    -> webApp  "Opent platform via browser"          "HTTPS" "Sync"
+        instructor -> webApp  "Beheert challenges via browser"      "HTTPS" "Sync"
 
         deploymentEnvironment "Production" {
 
             deploymentNode "Docker Swarm Cluster" {
-                description "Vijf nodes: drie identieke managers voor Raft-consensus en hoge beschikbaarheid, twee workers exclusief voor sandbox-containers."
+                description "Vijf nodes: drie managers voor Raft-consensus en platform-kritieke services, twee workers voor sandbox-containers en stateless platform-services."
                 technology "Docker Swarm mode, Ubuntu 24.04 LTS"
                 tags "Cluster"
 
-                # ── Managers: identiek, Swarm verdeelt de workload ────────────
-                # Alle platform-services draaien als Swarm services met
-                # replica's verdeeld over de drie managers.
-                # Bij uitval van één manager herplaatst Swarm de containers
-                # automatisch op de overige twee.
-
                 deploymentNode "Manager Nodes (×3)" {
-                    description "Drie identieke manager nodes. Draaien samen de Raft-consensus engine. De Swarm scheduler verdeelt alle platform-services automatisch over deze drie nodes. Bij uitval van één manager herplaatst Swarm de betrokken containers op de overige managers."
+                    description "Drie identieke manager nodes. Draaien de Raft-consensus engine. Hosten stateful en platform-kritieke services: databases, message broker en sandbox provisioner (heeft Docker socket toegang nodig)."
                     technology "Ubuntu 24.04 LTS, Docker Engine 27"
                     tags "ManagerNode"
                     instances 3
 
-                    deploymentNode "Platform Services" {
-                        description "Alle platform-services draaien als Swarm services met placement constraint node.role==manager. Replica's worden automatisch verdeeld."
-                        technology "Docker Swarm services"
-
-                        containerInstance webApp {
-                            description "2 replica's, verdeeld over de drie managers door de Swarm scheduler."
-                        }
-                        containerInstance apiGateway {
-                            description "2 replica's, verdeeld over de drie managers."
-                        }
-                        containerInstance userManagement {
-                            description "1 replica, door Swarm geplaatst op een beschikbare manager."
-                        }
-                        containerInstance challengeCatalog {
-                            description "1 replica."
-                        }
-                        containerInstance contentManager {
-                            description "1 replica."
-                        }
-                        containerInstance submissionValidator {
-                            description "1 replica."
-                        }
-                        containerInstance progressTracker {
-                            description "1 replica."
-                        }
-                        containerInstance challengeInterface {
-                            description "1 replica."
-                        }
+                    deploymentNode "Sandbox Provisioner Container" {
+                        description "Op manager geplaatst omdat Docker socket toegang vereist is voor sandbox-beheer. placement: node.role==manager"
+                        technology "Docker container"
                         containerInstance sandboxProvisioner {
-                            description "1 replica, met toegang tot Docker socket voor sandbox-beheer."
-                        }
-                        containerInstance messageBroker {
-                            description "1 replica, named volume rabbitmq-data voor persistentie."
+                            description "1 replica. Heeft gemountede Docker socket nodig."
                         }
                     }
 
-                    deploymentNode "Databases" {
-                        description "Alle databases draaien als Swarm services met placement constraint op manager nodes. Named volumes garanderen persistentie."
-                        technology "Docker Swarm services, named volumes"
+                    deploymentNode "Message Broker Container" {
+                        description "Stateful service, vereist persistente named volume. placement: node.role==manager"
+                        technology "Docker container"
+                        containerInstance messageBroker {
+                            description "1 replica, named volume rabbitmq-data."
+                        }
+                    }
 
-                        containerInstance userDb {
-                            description "Named volume: user-db-data"
-                        }
-                        containerInstance catalogDb {
-                            description "Named volume: catalog-db-data"
-                        }
-                        containerInstance contentDb {
-                            description "Named volume: content-db-data"
-                        }
+                    deploymentNode "User Database Container" {
+                        description "Named volume: user-db-data. placement: node.role==manager"
+                        technology "Docker container"
+                        containerInstance userDb {}
+                    }
 
-                        containerInstance submissionDb {
-                            description "Named volume: submission-db-data"
-                        }
-                        containerInstance progressDb {
-                            description "Named volume: progress-db-data"
-                        }
+                    deploymentNode "Catalog Database Container" {
+                        description "Named volume: catalog-db-data. placement: node.role==manager"
+                        technology "Docker container"
+                        containerInstance catalogDb {}
+                    }
+
+                    deploymentNode "Content Database Container" {
+                        description "Named volume: content-db-data. placement: node.role==manager"
+                        technology "Docker container"
+                        containerInstance contentDb {}
+                    }
+
+
+
+                    deploymentNode "Submission Database Container" {
+                        description "Named volume: submission-db-data. placement: node.role==manager"
+                        technology "Docker container"
+                        containerInstance submissionDb {}
+                    }
+
+                    deploymentNode "Progress Database Container" {
+                        description "Named volume: progress-db-data. placement: node.role==manager"
+                        technology "Docker container"
+                        containerInstance progressDb {}
                     }
                 }
 
-                # ── Workers: exclusief voor sandbox-containers (ADR 004) ───────
-                # Sandbox-containers krijgen een placement constraint
-                # node.role==worker zodat ze NOOIT op een manager terechtkomen.
-                # Dit is de enige bewuste scheiding in de Swarm-topologie
-                # en vloeit rechtstreeks voort uit ADR 004.
-
                 deploymentNode "Worker Nodes (×2)" {
-                    description "Twee identieke worker nodes exclusief voor sandbox-containers. Placement constraint node.role==worker zorgt dat sandbox-containers hier terechtkomen en nooit op de managers. Bij uitval van één worker herplaatst Swarm actieve sandboxen op de andere worker."
+                    description "Twee worker nodes. Draaien stateless platform-services en sandbox-containers. Sandbox-containers krijgen placement constraint node.role==worker zodat ze nooit op managers terechtkomen."
                     technology "Ubuntu 24.04 LTS, Docker Engine 27"
                     tags "WorkerNode"
                     instances 2
 
+                    deploymentNode "Web Application Container" {
+                        description "2 replica's verdeeld over workers. placement: node.role==worker"
+                        technology "Docker container"
+                        containerInstance webApp {}
+                    }
+
+                    deploymentNode "API Gateway Container" {
+                        description "2 replica's verdeeld over workers. placement: node.role==worker"
+                        technology "Docker container"
+                        containerInstance apiGateway {}
+                    }
+
+                    deploymentNode "User Management Container" {
+                        description "1 replica. placement: node.role==worker"
+                        technology "Docker container"
+                        containerInstance userManagement {}
+                    }
+
+                    deploymentNode "Challenge Catalog Container" {
+                        description "1 replica. placement: node.role==worker"
+                        technology "Docker container"
+                        containerInstance challengeCatalog {}
+                    }
+
+                    deploymentNode "Content Manager Container" {
+                        description "1 replica. placement: node.role==worker"
+                        technology "Docker container"
+                        containerInstance contentManager {}
+                    }
+
+                    deploymentNode "Submission Validator Container" {
+                        description "1 replica. placement: node.role==worker"
+                        technology "Docker container"
+                        containerInstance submissionValidator {}
+                    }
+
+                    deploymentNode "Progress Tracker Container" {
+                        description "1 replica. placement: node.role==worker"
+                        technology "Docker container"
+                        containerInstance progressTracker {}
+                    }
+
+                    deploymentNode "Challenge Interface Container" {
+                        description "1 replica, op worker voor lage latentie naar sandbox-containers. placement: node.role==worker"
+                        technology "Docker container"
+                        containerInstance challengeInterface {}
+                    }
+
                     deploymentNode "Sandbox Containers" {
                         description "Dynamisch aangemaakte containers per gebruikerssessie. Draaien in isolated_lab_net, een intern overlay-netwerk zonder egress naar platform-services of internet."
                         technology "Docker, internal overlay network, seccomp + AppArmor"
-
                         containerInstance sandboxRuntime {
                             description "Per-sessie container, automatisch vernietigd na afsluiten."
                         }
@@ -303,11 +328,9 @@ workspace "HackLab" "Leerplatform voor hacking via uitvoerbare voorbeelden" {
                 border Dashed
             }
             element "ManagerNode" {
-                background #0c3d6e
                 color #ffffff
             }
             element "WorkerNode" {
-                background #7a1f1f
                 color #ffffff
             }
             element "Cluster" {
