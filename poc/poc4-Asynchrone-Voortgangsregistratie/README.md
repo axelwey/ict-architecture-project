@@ -87,7 +87,7 @@ docker service logs -f poc4_consumer
 ### Stap 2: Dien een correcte flag in
 
 ```bash
-curl -s -X POST http://localhost:3000/submit \
+curl -4 -s -X POST http://localhost:3000/submit \
   -H "Content-Type: application/json" \
   -d '{"userId": "student-42", "challengeId": "challenge-001", "flag": "FLAG{sql_injection_mastered}"}' \
   | jq
@@ -113,7 +113,7 @@ In de consumer-logs verschijnt vijf seconden later:
 ### Stap 3: Dien een foute flag in
 
 ```bash
-curl -s -X POST http://localhost:3000/submit \
+curl -4 -s -X POST http://localhost:3000/submit \
   -H "Content-Type: application/json" \
   -d '{"userId": "student-42", "challengeId": "challenge-002", "flag": "FLAG{wrong}"}' \
   | jq
@@ -142,7 +142,7 @@ docker service scale poc4_consumer=0
 Dien een nieuwe flag in:
 
 ```bash
-curl -s -X POST http://localhost:3000/submit \
+curl -4 -s -X POST http://localhost:3000/submit \
   -H "Content-Type: application/json" \
   -d '{"userId": "student-99", "challengeId": "challenge-003", "flag": "FLAG{rce_via_deserialization}"}' \
   | jq
