@@ -1,61 +1,165 @@
-# POC 4 — Asynchrone Voortgangsregistratie
+# POC 4: Asynchrone Voortgangsregistratie
 
-## 1\. Doelstelling en Context
+**Valideert:** ADR 002 (Hybride communicatie), ADR 003 (Data ownership)
 
-Deze Proof of Concept (POC) valideert de implementatie van een **niet-blokkerende gebruikerservaring** bij het indienen van challenge-oplossingen. In een hacking-platform is het essentieel dat een student direct feedback krijgt over zijn actie (vlag goed/fout), terwijl de zwaardere verwerking (zoals het bijwerken van scores en voortgang in een database) veilig op de achtergrond gebeurt.
+## Doel
 
-### Architecturale Link
+Deze POC toont aan dat een flag-indiening asynchroon verwerkt kan worden:
+de student krijgt **onmiddellijk** een resultaat terug, terwijl de
+voortgangsregistratie **op de achtergrond** via RabbitMQ verloopt. De twee
+verantwoordelijkheden — validatie en opslag — zijn strikt gescheiden en
+communiceren uitsluitend via een message queue.
 
-Deze POC vormt het technische bewijs voor twee cruciale architecturale beslissingen:
 
-- **ADR 002 (Communicatie tussen services):** Gebruik van een hybride model. Synchrone HTTP-communicatie voor de interactie met de student en asynchrone berichtuitwisseling via **RabbitMQ** voor de interne systeemafhandeling.
-    
-- **ADR 003 (Data ownership per service):** De Submission Validator en de Progress Tracker delen geen database. Data wordt overgedragen via events, waardoor de services volledig ontkoppeld zijn.
-    
+## Componenten
 
-* * *
+| Service      | Rol                                                                 |
+|--------------|---------------------------------------------------------------------|
+| `rabbitmq`   | Message broker. Bewaart events op de queue `flag.submitted`.        |
+| `producer`   | Submission Validator. Valideert de flag en publiceert een event.    |
+| `consumer`   | Progress Tracker. Consumeert het event en werkt de voortgang bij.   |
 
-## 2\. Technische Componenten
+### Producer (`producer.js`)
 
-De POC is opgebouwd uit drie actieve containers die samenwerken binnen een Docker Swarm-omgeving:
+Exposeert een REST-endpoint `POST /submit`. Bij ontvangst van een verzoek:
 
-### A. Submission Validator (Producer)
+1. Valideert de ingediende flag aan de hand van een vaste tabel met correcte antwoorden.
+2. Stuurt **onmiddellijk** een JSON-antwoord terug (`{ "correct": true/false, "timestamp": "..." }`).
+3. Publiceert daarna een persistent event op de queue `flag.submitted`.
 
-- **Technologie:** Node.js, Express, `amqplib`.
-    
-- **Rol:** Ontvangt de vlag van de student.
-    
-- **Logica:** In `producer.js` wordt de vlag onmiddellijk gecontroleerd tegen een lokale lijst (in productie is dit een eigen database).
-    
-- **Asynchroon gedrag:** Het HTTP-antwoord (`res.json`) wordt verstuurd **voordat** het bericht naar de queue gaat. Hierdoor ervaart de gebruiker nul vertraging door netwerk- of database-latency in de backend.
-    
+De beschikbare challenges en hun flags:
 
-### B. Message Broker (RabbitMQ)
+| Challenge ID      | Correcte flag                        |
+|-------------------|--------------------------------------|
+| `challenge-001`   | `FLAG{sql_injection_mastered}`       |
+| `challenge-002`   | `FLAG{xss_reflected_found}`          |
+| `challenge-003`   | `FLAG{rce_via_deserialization}`      |
 
-- **Technologie:** RabbitMQ 3.13 (Management-Alpine).
-    
-- **Rol:** De betrouwbare tussenpersoon.
-    
-- **Configuratie:** Gebruikt een `durable` queue en `persistent` berichten om te garanderen dat er geen voortgangsdata verloren gaat, zelfs niet bij een tijdelijke uitval van de consument.
-    
+### Consumer (`consumer.js`)
 
-### C. Progress Tracker (Consumer)
+Luistert continu op de queue `flag.submitted`. Bij ontvangst van een event:
 
-- **Technologie:** Node.js, `amqplib`.
-    
-- **Rol:** Verwerkt de resultaten op de achtergrond.
-    
-- **Logica:** Om een zware database-transactie te simuleren, bevat `consumer.js` een kunstmatige vertraging van **5 seconden** (`DELAY_MS`). Pas na deze tijd wordt de voortgang bijgewerkt.
-    
+1. Wacht vijf seconden (gesimuleerde database-write).
+2. Werkt de in-memory voortgang bij voor de betreffende gebruiker.
+3. Logt het totaal aantal opgeloste challenges voor die gebruiker.
 
-* * *
+Beide services proberen bij opstart maximaal tien keer verbinding te maken
+met RabbitMQ, met een wachttijd van drie seconden tussen pogingen. Dit
+vangt het geval op waarbij RabbitMQ nog niet klaar is wanneer de services
+starten.
 
-## 3\. Deployment Instructies
+## Opstarten
 
-## 4\. Testen en Validatie
+Docker Swarm bouwt images niet zelf. Gebruik het meegeleverde script om de
+images te bouwen en de stack te deployen:
+
+```bash
+cd poc4-Asynchrone-Voortgangsregistratie
+chmod +x start.sh
+./start.sh
+```
+
+Het script voert de volgende stappen uit:
+
+```bash
+docker build -t poc4-producer:latest ./producer
+docker build -t poc4-consumer:latest ./consumer
+docker stack deploy -c poc.yml poc4
+```
+
+Wacht ongeveer tien seconden tot alle services actief zijn:
+
+```bash
+docker stack services poc4
+```
+
+Alle drie services moeten de status `1/1` tonen voordat je verder gaat.
+
+## Demonstratie
+
+### Stap 1 — Volg de logs van de consumer
+
+Open een tweede terminal en volg de uitvoer van de Progress Tracker:
+
+```bash
+docker service logs -f poc4_consumer
+```
+
+### Stap 2 — Dien een correcte flag in
+
+```bash
+curl -s -X POST http://localhost:3000/submit \
+  -H "Content-Type: application/json" \
+  -d '{"userId": "student-42", "challengeId": "challenge-001", "flag": "FLAG{sql_injection_mastered}"}' \
+  | jq
+```
+
+Verwacht antwoord (onmiddellijk):
+
+```json
+{
+  "correct": true,
+  "timestamp": "2025-05-17T10:00:00.000Z"
+}
+```
+
+In de consumer-logs verschijnt **vijf seconden later**:
 
 ```
-curl -X POST http://localhost:3000/submit -H "Content-Type: application/json" -d '{"userId":"student-1","challengeId":"challenge-001","flag":"FLAG{sql_injection_mastered}"}'
+[consumer] event ontvangen: student-42 → challenge-001
+[consumer] wacht 5s (simuleert DB-write)...
+[consumer] voortgang bijgewerkt: student-42 heeft 1 challenge(s) opgelost
 ```
 
-&nbsp;
+### Stap 3 — Dien een foute flag in
+
+```bash
+curl -s -X POST http://localhost:3000/submit \
+  -H "Content-Type: application/json" \
+  -d '{"userId": "student-42", "challengeId": "challenge-002", "flag": "FLAG{wrong}"}' \
+  | jq
+```
+
+Verwacht antwoord:
+
+```json
+{
+  "correct": false,
+  "timestamp": "2025-05-17T10:00:05.000Z"
+}
+```
+
+Er wordt ook bij een fout antwoord een event gepubliceerd, zodat de
+Progress Tracker mislukte pogingen kan registreren.
+
+### Stap 4 — Toon dat events niet verloren gaan bij uitval
+
+Stop de consumer tijdelijk:
+
+```bash
+docker service scale poc4_consumer=0
+```
+
+Dien een nieuwe flag in:
+
+```bash
+curl -s -X POST http://localhost:3000/submit \
+  -H "Content-Type: application/json" \
+  -d '{"userId": "student-99", "challengeId": "challenge-003", "flag": "FLAG{rce_via_deserialization}"}' \
+  | jq
+```
+
+De producer antwoordt nog steeds onmiddellijk. Start de consumer opnieuw:
+
+```bash
+docker service scale poc4_consumer=1
+```
+
+In de logs is te zien dat het event alsnog verwerkt wordt — RabbitMQ
+heeft het bericht bewaard terwijl de consumer offline was.
+
+## Opruimen
+
+```bash
+docker stack rm poc4
+```
