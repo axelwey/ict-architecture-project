@@ -7,6 +7,7 @@ import logging
 from flask import Flask, jsonify
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
+logging.getLogger("pika").setLevel(logging.WARNING)
 log = logging.getLogger(__name__)
 
 client = docker.DockerClient(base_url="unix://var/run/docker.sock", version="auto")

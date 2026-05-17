@@ -1,12 +1,12 @@
 services:
-
+ 
   rabbitmq:
     image: rabbitmq:3-alpine
     networks: [poc_net]
     deploy:
       placement:
         constraints: [node.role == manager]
-
+ 
   provisioner:
     image: poc2:latest
     command: python provisioner.py
@@ -18,12 +18,15 @@ services:
     deploy:
       placement:
         constraints: [node.role == manager]
-
+ 
   event-logger:
     image: poc2:latest
     command: python event_logger.py
     networks: [poc_net]
-
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+ 
 networks:
   poc_net:
     driver: overlay
