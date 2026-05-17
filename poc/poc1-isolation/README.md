@@ -1,18 +1,20 @@
-# POC 1 — Sandbox Isolation & Resource Limiting
+# POC 1 — Container Isolation & Resource Limiting
 
 ## Doel
 
 Deze Proof of Concept valideert ADR 004 (Isolatie van sandbox-omgevingen).
 
-Het doel is aan te tonen dat Docker-containers gebruikt kunnen worden als veilige sandboxomgevingen voor gebruikers die code, scripts of exploits uitvoeren binnen het HackLab-platform.
+Het doel van deze POC is aan te tonen dat Docker-containers gebruikt kunnen worden als veilige en geïsoleerde sandboxomgevingen binnen het HackLab-platform.
 
-De POC demonstreert:
+Gebruikers voeren binnen het platform potentieel onbetrouwbare code, scripts en exploits uit. Daarom moet elke sandboxomgeving:
 
-- isolatie tussen sandbox en host-systeem
-- beperkte rechten binnen de container
-- CPU- en geheugenlimieten
-- automatische opruiming van sandboxen
-- bescherming van het hostsysteem tegen resource exhaustion
+- geïsoleerd zijn van andere sandboxen
+- geen elevated privileges hebben
+- beperkte resources gebruiken
+- geen directe toegang hebben tot het hostsysteem
+- automatisch verwijderd kunnen worden na gebruik
+
+Deze POC demonstreert dat Docker deze eigenschappen kan ondersteunen.
 
 ---
 
@@ -26,7 +28,9 @@ De test toont aan dat:
 
 - gebruikersprocessen geïsoleerd blijven
 - resourcegebruik gecontroleerd kan worden
-- containers veilig vernietigd kunnen worden na gebruik
+- sandboxen geen elevated privileges krijgen
+- sandboxen automatisch verwijderd kunnen worden
+- het hostsysteem beschermd blijft tegen resource exhaustion
 
 Ondersteunde karakteristieken:
 
@@ -36,12 +40,24 @@ Ondersteunde karakteristieken:
 
 ---
 
-# Vereisten
+# Structuur van de POC
 
-- Docker Desktop of Docker Engine
-- Linux / WSL / Debian omgeving
+De POC bestaat uit:
 
-Controleer of Docker actief is:
+- een Docker-container die dient als sandboxomgeving
+- resource limiting via Docker Swarm
+- privilege beperking via security opties
+- een intern overlay-netwerk zonder externe toegang
+- een stress test die memory exhaustion simuleert
 
-```bash
-docker --version
+---
+
+# Bestandsstructuur
+
+```text
+poc1-isolation/
+├── Dockerfile
+├── poc.yaml
+├── README.md
+├── stress_test.py
+└── screenshots/
