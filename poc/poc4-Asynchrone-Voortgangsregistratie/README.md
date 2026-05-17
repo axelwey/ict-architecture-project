@@ -4,53 +4,52 @@
 
 ## Doel
 
-Deze POC toont aan dat een flag-indiening asynchroon verwerkt kan worden:
-de student krijgt **onmiddellijk** een resultaat terug, terwijl de
-voortgangsregistratie **op de achtergrond** via RabbitMQ verloopt. De twee
-verantwoordelijkheden — validatie en opslag — zijn strikt gescheiden en
+Deze POC toont aan dat een flag-indiening asynchroon verwerkt kan worden:  
+de student krijgt onmiddellijk een resultaat terug, terwijl de  
+voortgangsregistratie op de achtergrond via RabbitMQ verloopt. De twee  
+verantwoordelijkheden validatie en opslag zijn strikt gescheiden en  
 communiceren uitsluitend via een message queue.
-
 
 ## Componenten
 
-| Service      | Rol                                                                 |
-|--------------|---------------------------------------------------------------------|
-| `rabbitmq`   | Message broker. Bewaart events op de queue `flag.submitted`.        |
-| `producer`   | Submission Validator. Valideert de flag en publiceert een event.    |
-| `consumer`   | Progress Tracker. Consumeert het event en werkt de voortgang bij.   |
+| Service | Rol |
+| --- | --- |
+| `rabbitmq` | Message broker. Bewaart events op de queue `flag.submitted`. |
+| `producer` | Submission Validator. Valideert de flag en publiceert een event. |
+| `consumer` | Progress Tracker. Consumeert het event en werkt de voortgang bij. |
 
 ### Producer (`producer.js`)
 
 Exposeert een REST-endpoint `POST /submit`. Bij ontvangst van een verzoek:
 
-1. Valideert de ingediende flag aan de hand van een vaste tabel met correcte antwoorden.
-2. Stuurt **onmiddellijk** een JSON-antwoord terug (`{ "correct": true/false, "timestamp": "..." }`).
-3. Publiceert daarna een persistent event op de queue `flag.submitted`.
+1.  Valideert de ingediende flag aan de hand van een vaste tabel met correcte antwoorden.
+2.  Stuurt **onmiddellijk** een JSON-antwoord terug (`{ "correct": true/false, "timestamp": "..." }`).
+3.  Publiceert daarna een persistent event op de queue `flag.submitted`.
 
 De beschikbare challenges en hun flags:
 
-| Challenge ID      | Correcte flag                        |
-|-------------------|--------------------------------------|
-| `challenge-001`   | `FLAG{sql_injection_mastered}`       |
-| `challenge-002`   | `FLAG{xss_reflected_found}`          |
-| `challenge-003`   | `FLAG{rce_via_deserialization}`      |
+| Challenge ID | Correcte flag |
+| --- | --- |
+| `challenge-001` | `FLAG{sql_injection_mastered}` |
+| `challenge-002` | `FLAG{xss_reflected_found}` |
+| `challenge-003` | `FLAG{rce_via_deserialization}` |
 
 ### Consumer (`consumer.js`)
 
 Luistert continu op de queue `flag.submitted`. Bij ontvangst van een event:
 
-1. Wacht vijf seconden (gesimuleerde database-write).
-2. Werkt de in-memory voortgang bij voor de betreffende gebruiker.
-3. Logt het totaal aantal opgeloste challenges voor die gebruiker.
+1.  Wacht vijf seconden (gesimuleerde database-write).
+2.  Werkt de in-memory voortgang bij voor de betreffende gebruiker.
+3.  Logt het totaal aantal opgeloste challenges voor die gebruiker.
 
-Beide services proberen bij opstart maximaal tien keer verbinding te maken
-met RabbitMQ, met een wachttijd van drie seconden tussen pogingen. Dit
-vangt het geval op waarbij RabbitMQ nog niet klaar is wanneer de services
+Beide services proberen bij opstart maximaal tien keer verbinding te maken  
+met RabbitMQ, met een wachttijd van drie seconden tussen pogingen. Dit  
+vangt het geval op waarbij RabbitMQ nog niet klaar is wanneer de services  
 starten.
 
 ## Opstarten
 
-Docker Swarm bouwt images niet zelf. Gebruik het meegeleverde script om de
+Docker Swarm bouwt images niet zelf. Gebruik het meegeleverde script om de  
 images te bouwen en de stack te deployen:
 
 ```bash
@@ -59,7 +58,7 @@ chmod +x start.sh
 ./start.sh
 ```
 
-Het script voert de volgende stappen uit:
+Of voer het handmatig uit:
 
 ```bash
 docker build -t poc4-producer:latest ./producer
@@ -67,7 +66,7 @@ docker build -t poc4-consumer:latest ./consumer
 docker stack deploy -c poc.yml poc4
 ```
 
-Wacht ongeveer tien seconden tot alle services actief zijn:
+Wacht tot alle services actief zijn:
 
 ```bash
 docker stack services poc4
@@ -77,7 +76,7 @@ Alle drie services moeten de status `1/1` tonen voordat je verder gaat.
 
 ## Demonstratie
 
-### Stap 1 — Volg de logs van de consumer
+### Stap 1: Volg de logs van de consumer
 
 Open een tweede terminal en volg de uitvoer van de Progress Tracker:
 
@@ -85,7 +84,7 @@ Open een tweede terminal en volg de uitvoer van de Progress Tracker:
 docker service logs -f poc4_consumer
 ```
 
-### Stap 2 — Dien een correcte flag in
+### Stap 2: Dien een correcte flag in
 
 ```bash
 curl -s -X POST http://localhost:3000/submit \
@@ -103,7 +102,7 @@ Verwacht antwoord (onmiddellijk):
 }
 ```
 
-In de consumer-logs verschijnt **vijf seconden later**:
+In de consumer-logs verschijnt vijf seconden later:
 
 ```
 [consumer] event ontvangen: student-42 → challenge-001
@@ -111,7 +110,7 @@ In de consumer-logs verschijnt **vijf seconden later**:
 [consumer] voortgang bijgewerkt: student-42 heeft 1 challenge(s) opgelost
 ```
 
-### Stap 3 — Dien een foute flag in
+### Stap 3: Dien een foute flag in
 
 ```bash
 curl -s -X POST http://localhost:3000/submit \
@@ -129,10 +128,10 @@ Verwacht antwoord:
 }
 ```
 
-Er wordt ook bij een fout antwoord een event gepubliceerd, zodat de
+Er wordt ook bij een fout antwoord een event gepubliceerd, zodat de  
 Progress Tracker mislukte pogingen kan registreren.
 
-### Stap 4 — Toon dat events niet verloren gaan bij uitval
+### Stap 4: Toon dat events niet verloren gaan bij uitval
 
 Stop de consumer tijdelijk:
 
@@ -155,7 +154,7 @@ De producer antwoordt nog steeds onmiddellijk. Start de consumer opnieuw:
 docker service scale poc4_consumer=1
 ```
 
-In de logs is te zien dat het event alsnog verwerkt wordt — RabbitMQ
+In de logs is te zien dat het event alsnog verwerkt wordt RabbitMQ  
 heeft het bericht bewaard terwijl de consumer offline was.
 
 ## Opruimen
