@@ -1,0 +1,49 @@
+Slide 1 — Intro
+"Goedemiddag. Ik ben Axel, en samen met Jef, Anwar en Jasper vormen we een team van vier cybersecuritystudenten.
+Het project dat we vandaag voorstellen is HackLab — een leerplatform waarop gebruikers kunnen hacken via uitvoerbare, geïsoleerde voorbeelden, vergelijkbaar met TryHackMe.
+De klantvraag was open en beknopt. Er lag weinig vast, wat betekent dat wij alle architecturale keuzes zelf moesten maken en onderbouwen. Een ander team had met dezelfde vraag tot een volledig andere architectuur kunnen komen.
+Onze aanpak: we zijn vertrokken vanuit wat het systeem moet kunnen en welke kwaliteiten daarvoor essentieel zijn. Daaruit volgden de logische componentenverdeling, de keuze van architecturale stijl, vijf concrete beslissingen die we documenteerden, bijhorende diagrammen en vier proofs of concept die de zwaarste beslissingen technisch valideren."
+
+Slide 2 — Context en aandachtspunten
+Aanpassing aan de slide: verwijder de woorden "Functioneel probleem" en "Architecturaal probleem" als titels van de twee kaarten. Vervang door "Wat het systeem moet kunnen" en "Wat dat architecturaal betekent".
+"HackLab is geen gewone leersite. Gebruikers voeren hier effectief exploits en aanvalscode uit. Dat is tegelijk de kern van het platform én het meest bepalende gegeven voor de architectuur.
+Concreet betekent dit dat elke actieve gebruiker een eigen geïsoleerde omgeving nodig heeft die rekenkracht verbruikt. Die omgevingen moeten volledig van elkaar afgeschermd zijn: als één omgeving vastloopt of gesaboteerd wordt, mag dat geen impact hebben op andere gebruikers of op het platform zelf.
+Dit zijn geen problemen die we later oplossen — het zijn randvoorwaarden waaraan de architectuur vanaf het begin moet voldoen. Ze bepalen direct welke kwaliteiten we als meest kritisch beschouwen, wat u op de volgende slide ziet."
+
+Slide 3 — Karakteristieken
+"Elke architectuur begint met de vraag: wat moet dit systeem goed kunnen? We hebben zeven kwaliteiten vastgelegd die voor HackLab het zwaarst doorwegen.
+Alle zeven zijn impliciet aanwezig in de klantvraag — de klant beschreef de functionaliteit, niet de kwaliteitseisen. Het is onze taak geweest die te vertalen.
+De drie bovenaan zijn het meest bepalend voor de architecturale keuzes die volgen. Security: gebruikers voeren exploits uit, isolatie is een structurele randvoorwaarde. Fault Tolerance: een crashende omgeving mag andere gebruikers nooit raken. Scalability: elke actieve gebruiker verbruikt een volledige omgeving, de zwaarst belaste laag moet onafhankelijk kunnen opschalen.
+Deze drie komen telkens terug in de beslissingen die we straks toelichten. Ze zijn de reden waarom bepaalde architecturale opties afvielen en andere niet."
+
+Slide 4 — Methode logische componenten
+"Voordat we een architecturale stijl kozen, hebben we vastgelegd wat het systeem conceptueel moet bevatten. We gebruikten daarvoor twee technieken.
+De workflow approach vertrekt vanuit de gebruikerservaring: een student meldt aan, kiest een challenge, start een omgeving, voert code uit, dient een oplossing in en bekijkt zijn score. Elke stap in die flow wijst op een afgebakende verantwoordelijkheid.
+Dat alleen was onvoldoende omdat het platform ook een tweede actor heeft. Via de actor/action approach keken we naar wat een instructor doet: challenges aanmaken, wijzigen, sessies beëindigen. Die acties zitten niet in de student-flow. Ze leverden een component op die we anders hadden gemist.
+Daarna hebben we de componenten getoetst: welke vereisten horen bij welke component, is de samenhang sterk genoeg, en sluiten ze aan bij de drie kritieke kwaliteiten."
+
+Slide 5 — Logische componenten
+"De twee analyses leverden zeven logische componenten op. Dit zijn geen services, geen containers, geen technologiekeuzes — enkel conceptuele bouwblokken met een duidelijk afgebakende taak, vastgelegd voordat er ook maar één architecturale keuze gemaakt was.
+De Sandbox Runtime valt op en dat is bewust. Dit is de enige component die effectief onbetrouwbare, door gebruikers geschreven code uitvoert. Ze staat los van de rest, heeft geen netwerktoegang tot het platform en mag als enige falen zonder andere componenten mee te trekken.
+Precies die vereiste — dat één component volledig geïsoleerd moet kunnen werken, falen en schalen — is de directe aanleiding voor de architecturale keuze die we op de volgende slides toelichten."
+
+Slide 11 — Authenticatie en autorisatie
+"Het platform heeft drie soorten gebruikers: studenten, instructors en beheerders. Elke service moet weten wie een request doet en wat die persoon mag uitvoeren. In een gedistribueerd systeem is dat geen triviale vraag.
+We hadden verschillende opties. De meest voor de hand liggende is dat elke service bij elk request de centrale authenticatieservice raadpleegt. Eenvoudig, maar het betekent dat als die centrale service uitvalt, het volledige platform stilvalt. Dat is onverenigbaar met onze beschikbaarheidseisen.
+Een andere optie was inloggen via een externe provider zoals Google of GitHub. Dat is technisch mogelijk en vertrouwd voor gebruikers. Maar het lost ons eigenlijke probleem niet op: externe providers kennen het concept van 'instructor' of 'beheerder binnen HackLab' niet. We zouden alsnog een eigen gebruikersbeheer nodig hebben bovenop de externe login, wat de complexiteit verhoogt zonder het kernprobleem op te lossen.
+Er bestaat ook tooling die dit volledig afhandelt, zoals Keycloak — een volwaardige identity provider die rollen, rechten en loginflows beheert. Dat was een serieuze optie. We hebben er bewust voor gekozen dit niet te gebruiken. Keycloak voegt aanzienlijke operationele complexiteit toe: een extra service die altijd beschikbaar moet zijn, configuratie die beheerd moet worden, en een leercurve voor het team. Voor een team van vier met een beperkte doorlooptijd was dat een te grote kost voor iets wat we zelf beheersbaar konden implementeren.
+Onze keuze was een eigen authenticatieservice op basis van asymmetrische cryptografie. Die service geeft tokens uit, ondertekend met een private sleutel die enkel die service kent. Alle andere services valideren die tokens lokaal met de bijhorende publieke sleutel, zonder de authenticatieservice te contacteren bij elke request.
+Het resultaat: als de authenticatieservice uitvalt nadat een gebruiker ingelogd is, blijven alle andere services gewoon werken. Geen centrale afhankelijkheid bij elke request. En geen enkele andere service kan valse tokens aanmaken, want die heeft de private sleutel niet.
+Hoe we dit concreet hebben opgebouwd en getest, tonen we live."
+
+Slide 17 — VERVANGEN door live demo-slide
+Wat je zegt tijdens de live demo in Postman:
+"We tonen dit live. De stack draait al.
+We starten met een login bij de User Management service — die geeft een token terug ondertekend met de private sleutel.
+Met dat token vragen we challenges op via de gateway. Die valideert het token lokaal en stuurt door. Geen contact met de authenticatieservice.
+We doen hetzelfde rechtstreeks bij de Catalog, zonder via de gateway te gaan. Die valideert ook lokaal. Dat bewijst dat de validatie echt gedistribueerd is.
+Nu de kerntest: we schakelen de User Management service volledig uit.
+(docker service scale poc_user-management=0)
+De Catalog en de Validator blijven gewoon antwoorden met een geldig token. De authenticatieservice is offline maar het systeem werkt. Dat is het bewijs van onze architecturale beslissing.
+We zetten de service terug aan en tonen tot slot scenario zes: we passen de inhoud van ons eigen token aan om onszelf beheerdersrechten toe te kennen. Zonder de private sleutel klopt de handtekening niet meer. Alle services weigeren het token.
+Scenario zeven: we sturen meer dan vijf requests per minuut via de gateway. Vanaf de zesde request krijgen we een 429-fout terug. De gateway past rate limiting toe, wat beschermt tegen misbruik."

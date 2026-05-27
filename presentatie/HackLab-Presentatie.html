@@ -163,7 +163,7 @@ w<!doctype html>
   </div>
   <div class="content grid big">
     <div class="card">
-      <h3>Functioneel probleem</h3>
+      <h3>Wat het systeem moet kunnen</h3>
       <ul>
         <li>Gebruikers moeten échte exploits kunnen uitvoeren.</li>
         <li>Elke gebruiker heeft een eigen geïsoleerde omgeving nodig.</li>
@@ -194,7 +194,7 @@ w<!doctype html>
 ══════════════════════════════════════════════════════════ -->
 <section class="slide">
   <div class="header">
-    <div><div class="eyebrow">2 · Karakteristieken</div><h2>7 karakteristieken — top 3 bepaalt de stijlkeuze</h2></div>
+    <div><div class="eyebrow">2 · Karakteristieken</div><h2>7 kwaliteiten die het systeem moet bezitten</h2></div>
   </div>
   <div class="content">
     <table class="matrix">
@@ -635,7 +635,7 @@ w<!doctype html>
   <div class="content">
     <div class="grid" style="margin-bottom:14px;">
       <div class="card yes">
-        <div class="label">Gekozen: hybride aanpak (RS256)</div>
+        <div class="label">Gekozen: hybride aanpak</div>
         <ul>
           <li><strong>Centrale uitgifte:</strong> User Management geeft JWT's uit ondertekend met private key.</li>
           <li><strong>Gedistribueerde validatie:</strong> alle services valideren lokaal met public key — geen call naar User Management per request.</li>
@@ -644,7 +644,7 @@ w<!doctype html>
         <div class="note">Bron: OAuth-les (les 9) — authorization server / resource server / RS256 asymmetrisch.</div>
       </div>
       <div class="card no">
-        <div class="label">Niet gekozen: centrale validatie per request</div>
+        <div class="label">Waarom niet: centrale validatie per request</div>
         <p>Als elke service de authenticatieservice raadpleegt bij elk request, wordt User Management een <strong>single point of failure</strong> en een performance-bottleneck. Dit druist in tegen availability en scalability.</p>
         <p style="margin-top:8px;">Bij een groter budget: Keycloak als volwaardige identity provider (demo in les 9). Voor ons team: zelfgebouwde JWT-service is haalbaar en onderhoudbaar.</p>
       </div>
@@ -919,14 +919,7 @@ w<!doctype html>
           <div class="step" style="min-height:40px;font-size:13px;width:100%;text-align:left;padding:6px 12px;">Submission Validator — public key — zelfstandige validatie</div>
         </div>
       </div>
-      <div class="card warn-card">
-        <div class="label">Geleerde lessen</div>
-        <ul style="font-size:15px;">
-          <li><code>docker stack deploy</code> gebruikt <strong>-c</strong>, niet -f (fout in opdrachttekst)</li>
-          <li>Ubuntu resolvet <code>localhost</code> naar IPv6 (::1) — Swarm publiceert enkel IPv4 → gebruik <code>127.0.0.1</code></li>
-          <li>Credentials in code → Docker Swarm secrets (zelfde patroon als RSA-keys)</li>
-        </ul>
-      </div>
+      
     </div>
     <div class="card">
       <h3>7 geautomatiseerde testscenario's</h3>
