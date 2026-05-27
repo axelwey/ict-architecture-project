@@ -1,0 +1,1194 @@
+w<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HackLab – ICT Architecture Verdediging</title>
+  <style>
+    :root {
+      --bg:#080f1e; --panel:#0d1b2e; --panel2:#111f35; --text:#eef4ff; --muted:#8ca0be;
+      --accent:#06b6d4; --accent2:#a78bfa; --good:#22c55e; --warn:#f59e0b; --bad:#ef4444;
+      --sandbox:#ef4444; --async:#f59e0b;
+      --line:rgba(255,255,255,.12); --shadow:0 20px 60px rgba(0,0,0,.45); --radius:22px;
+    }
+    *{box-sizing:border-box} html,body{margin:0;height:100%;overflow:hidden}
+    body{font-family:Inter,'Segoe UI',Roboto,Arial,sans-serif;color:var(--text);
+      background:radial-gradient(circle at 12% 15%,rgba(6,182,212,.18),transparent 30%),
+                 radial-gradient(circle at 88% 22%,rgba(167,139,250,.15),transparent 32%),
+                 linear-gradient(145deg,#060d1a,#080f1e 55%,#0c1525)}
+    .deck{height:100vh;width:100vw;position:relative}
+    .slide{position:absolute;inset:0;display:none;padding:42px 60px 68px;animation:fade .18s ease-out}
+    .slide.active{display:grid;grid-template-rows:auto 1fr;gap:18px}
+    @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+    .header{display:flex;justify-content:space-between;gap:20px}
+    .eyebrow{color:var(--accent);font-weight:900;letter-spacing:.14em;text-transform:uppercase;font-size:13px;margin-bottom:9px}
+    h1,h2,h3{margin:0;line-height:1.05}
+    h1{font-size:clamp(40px,5vw,76px);letter-spacing:-.055em;max-width:1100px}
+    h2{font-size:clamp(30px,3.8vw,58px);letter-spacing:-.045em;max-width:1150px}
+    h3{font-size:24px;letter-spacing:-.02em}
+    p,li{font-size:20px;line-height:1.35;color:var(--muted)}
+    p{margin:0 0 12px}ul{margin:0;padding-left:1.15em}li{margin:7px 0}
+    strong{color:var(--text)}em{color:var(--warn);font-style:normal;font-weight:800}
+    .content{align-self:center}
+    .subtitle{font-size:27px;color:var(--muted);max-width:940px;margin-top:20px}
+    .tagline{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px}
+    .pill{padding:9px 15px;border:1px solid var(--line);border-radius:999px;
+          background:rgba(255,255,255,.055);color:var(--text);font-weight:800;font-size:16px}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+    .grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .grid.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));
+          border:1px solid var(--line);border-radius:var(--radius);padding:20px;
+          box-shadow:var(--shadow)}
+    .card h3{margin-bottom:9px}
+    .card p,.card li{font-size:18px}
+    .small p,.small li{font-size:16px}
+    .big p,.big li{font-size:22px}
+    .center{text-align:center}
+    .quote{font-size:30px!important;color:var(--text);font-weight:850;line-height:1.28}
+    .note{margin-top:16px;padding:13px 17px;border-left:4px solid var(--accent);
+          background:rgba(0,0,0,.2);border-radius:12px;color:var(--muted);font-size:16px!important}
+    .decision{display:grid;grid-template-columns:150px 1fr;gap:16px;align-items:start;
+               padding:15px 0;border-bottom:1px solid var(--line)}
+    .decision:last-child{border-bottom:0}
+    .adr{font-size:23px;font-weight:950;color:var(--accent);letter-spacing:-.03em}
+    .decision p{font-size:18px;margin:0}
+    .label{font-size:13px;font-weight:950;text-transform:uppercase;letter-spacing:.12em;margin-bottom:9px}
+    .yes{border-color:rgba(34,197,94,.4)}.no{border-color:rgba(239,68,68,.4)}.warn-card{border-color:rgba(245,158,11,.4)}
+    .yes .label{color:var(--good)}.no .label{color:var(--bad)}.warn-card .label{color:var(--warn)}
+    .flow{display:flex;align-items:stretch;gap:10px;margin-top:16px}
+    .step{flex:1;min-height:96px;display:grid;place-items:center;text-align:center;padding:12px;
+          border-radius:18px;background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.28);
+          font-size:17px;font-weight:900}
+    .arrow{display:grid;place-items:center;color:var(--accent);font-size:28px;font-weight:950}
+    .matrix{width:100%;border-collapse:collapse;border-radius:18px;overflow:hidden;
+             background:rgba(255,255,255,.04);box-shadow:var(--shadow)}
+    .matrix th,.matrix td{border:1px solid var(--line);padding:13px 15px;text-align:left;vertical-align:top}
+    .matrix th{color:var(--text);font-size:17px;background:rgba(6,182,212,.12)}
+    .matrix td{color:var(--muted);font-size:16px;line-height:1.3}
+    .matrix strong{display:block;margin-bottom:4px;color:var(--text)}
+    .top3{color:var(--warn);font-weight:900}
+    .accent-bar{height:5px;border-radius:99px;margin:4px 0 12px;background:var(--accent)}
+    .danger-bar{background:var(--bad)}
+    .warn-bar{background:var(--warn)}
+    .green-bar{background:var(--good)}
+    .footer{position:fixed;left:60px;right:60px;bottom:20px;display:flex;justify-content:space-between;
+            align-items:center;color:rgba(238,244,255,.6);font-size:13px;pointer-events:none}
+    .progress{height:4px;width:260px;background:rgba(255,255,255,.1);border-radius:99px;overflow:hidden}
+    .bar{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:99px}
+    kbd{border:1px solid var(--line);background:rgba(255,255,255,.08);border-radius:6px;padding:2px 6px;color:var(--text)}
+
+    /* SPEAKER NOTES */
+    .practice-note{
+      margin-top:14px;padding:16px 18px;border-radius:16px;
+      border:1px solid rgba(245,158,11,.38);background:rgba(245,158,11,.07);
+      color:var(--muted);font-size:15px;line-height:1.4;
+      box-shadow:0 12px 34px rgba(0,0,0,.22);
+      max-height:32vh;overflow:auto;
+    }
+    .practice-note strong{color:var(--warn)}
+    .practice-note p{font-size:15px;line-height:1.4;margin:0 0 9px;color:var(--muted)}
+    .practice-note ul{margin-top:5px;padding-left:1.2em}
+    .practice-note li{font-size:14.5px;margin:4px 0;color:var(--muted)}
+    .practice-label{display:block;color:var(--warn);font-weight:950;text-transform:uppercase;
+                    letter-spacing:.11em;font-size:12px;margin-bottom:7px}
+    body.hide-notes .practice-note{display:none}
+    .note-toggle{position:fixed;right:60px;top:16px;z-index:10;color:rgba(238,244,255,.7);
+                 font-size:12px;border:1px solid var(--line);background:rgba(255,255,255,.06);
+                 border-radius:999px;padding:6px 11px;pointer-events:none}
+
+    /* STIJL VERGELIJKING */
+    .style-col{border-radius:var(--radius);padding:16px;border:1px solid var(--line);
+               background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.03))}
+    .style-col.chosen{border-color:rgba(34,197,94,.5);background:linear-gradient(180deg,rgba(34,197,94,.12),rgba(34,197,94,.04))}
+    .style-col.second{border-color:rgba(245,158,11,.45)}
+    .style-top{height:6px;border-radius:99px 99px 0 0;margin:-16px -16px 12px;background:var(--accent)}
+    .style-col.chosen .style-top{background:var(--good)}
+    .style-col.second .style-top{background:var(--warn)}
+
+    @media print{
+      html,body{overflow:visible;height:auto;background:#fff;color:#111}
+      .deck{height:auto;width:auto}
+      .slide{position:relative;display:grid!important;page-break-after:always;min-height:100vh;color:#111;background:#fff}
+      .footer{display:none}p,li,.subtitle,.matrix td{color:#333}
+      .card{box-shadow:none;border-color:#ddd;background:#fff}
+      .matrix th{background:#eee;color:#111}
+    }
+  </style>
+</head>
+<body class="hide-notes">
+<div class="note-toggle">Druk <kbd>N</kbd> voor spreekscript</div>
+<main class="deck" aria-label="HackLab – ICT Architecture Verdediging">
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 1 — TITEL
+══════════════════════════════════════════════════════════ -->
+<section class="slide active">
+  <div class="header">
+    <div>
+      <div class="eyebrow">ICT Architecture · Projectverdediging</div>
+      <h1>HackLab</h1>
+      <p class="subtitle">Een platform om gebruikers te leren hacken via uitvoerbare, geïsoleerde voorbeelden.</p>
+      <div class="tagline">
+        <span class="pill">Microservices</span>
+        <span class="pill">Docker Swarm</span>
+        <span class="pill">JWT RS256</span>
+        <span class="pill">RabbitMQ</span>
+        <span class="pill">4 POC's</span>
+      </div>
+    </div>
+  </div>
+  <div class="content">
+    <div class="card big">
+      <h3>Doel van de presentatie</h3>
+      <p>We tonen hoe de architecturale keuzes voortvloeien uit de karakteristieken van het systeem, hoe ze verantwoord zijn via ADR's, en hoe de POC's de meest uitdagende beslissingen technisch valideren.</p>
+    </div>
+  </div>
+  <div class="practice-note">
+    <span class="practice-label">Spreekscript slide 1</span>
+    <p>Goedemiddag. Wij stellen vandaag de architectuur voor van HackLab, een platform om gebruikers te leren hacken via uitvoerbare voorbeelden, vergelijkbaar met TryHackMe.</p>
+    <p>De klantvraag was bijzonder kort: "een systeem om gebruikers te leren hacken via uitvoerbare voorbeelden." Die beknoptheid is opzettelijk — wij moeten die vraag architecturaal interpreteren. Dat is precies wat we vandaag tonen.</p>
+    <p>De rode draad: we vertrekken vanuit de karakteristieken van het systeem, leiden daaruit de logische componentenverdeling af, onderbouwen vervolgens de architecturale stijlkeuze en de bijkomende beslissingen via ADR's, en bewijzen de meest uitdagende aspecten via vier proofs of concept.</p>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 2 — PROBLEEMSTELLING
+══════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <div class="header">
+    <div><div class="eyebrow">1 · Probleemstelling</div><h2>Dit is geen gewone leersite</h2></div>
+  </div>
+  <div class="content grid big">
+    <div class="card">
+      <h3>Functioneel probleem</h3>
+      <ul>
+        <li>Gebruikers moeten échte exploits kunnen uitvoeren.</li>
+        <li>Elke gebruiker heeft een eigen geïsoleerde omgeving nodig.</li>
+        <li>Voortgang en scores moeten bijgehouden worden.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Architecturaal probleem</h3>
+      <ul>
+        <li>Uitvoerbare omgevingen verbruiken rekenkracht per gebruiker.</li>
+        <li>Een crashende sandbox mag andere gebruikers niet raken.</li>
+        <li>Onveilige code mag het platform niet kunnen compromitteren.</li>
+        <li>Het systeem moet schaalbaar zijn bij gelijktijdige gebruikers.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="practice-note">
+    <span class="practice-label">Spreekscript slide 2</span>
+    <p>HackLab is geen gewone leersite. Het sleutelwoord is "uitvoerbare voorbeelden": gebruikers voeren echte exploits en aanvalscode uit. Dat maakt security een fundamentele randvoorwaarde, niet een optionele feature.</p>
+    <p>Het architecturale kernprobleem is dat elke actieve gebruiker een volledige geïsoleerde omgeving nodig heeft die rekenkracht verbruikt. Als één omgeving crasht — of opzettelijk gesaboteerd wordt — mag dit de rest van het systeem niet raken.</p>
+    <p>De vergelijking met TryHackMe helpt de verwachtingen te concretiseren: geïsoleerde labs, challenges per categorie, voortgangsbeheer, moeilijkheidsniveaus.</p>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 3 — KARAKTERISTIEKEN TABEL
+══════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <div class="header">
+    <div><div class="eyebrow">2 · Karakteristieken</div><h2>7 karakteristieken — top 3 bepaalt de stijlkeuze</h2></div>
+  </div>
+  <div class="content">
+    <table class="matrix">
+      <tr>
+        <th>Karakteristiek</th>
+        <th>Expliciet in klantvraag?</th>
+        <th>Top 3?</th>
+        <th>Verantwoording</th>
+      </tr>
+      <tr>
+        <td><strong>Security</strong></td>
+        <td>Nee (impliciet)</td>
+        <td><span class="top3">★ Ja</span></td>
+        <td>Gebruikers voeren exploits uit. Isolatie is een structurele randvoorwaarde.</td>
+      </tr>
+      <tr>
+        <td><strong>Fault Tolerance</strong></td>
+        <td>Nee (impliciet)</td>
+        <td><span class="top3">★ Ja</span></td>
+        <td>Een crashende sandbox mag andere gebruikers of het platform nooit raken.</td>
+      </tr>
+      <tr>
+        <td><strong>Scalability</strong></td>
+        <td>Nee (impliciet)</td>
+        <td><span class="top3">★ Ja</span></td>
+        <td>Elke actieve gebruiker verbruikt een volledige omgeving. De sandbox-laag moet onafhankelijk schalen.</td>
+      </tr>
+      <tr>
+        <td><strong>Availability</strong></td>
+        <td>Nee (impliciet)</td>
+        <td>Nee</td>
+        <td>Uitval onderbreekt actieve leersessies. HA is een eis, maar minder bepalend dan de top 3.</td>
+      </tr>
+      <tr>
+        <td><strong>Extensibility</strong></td>
+        <td>Nee (impliciet)</td>
+        <td>Nee</td>
+        <td>Nieuwe challenges en kwetsbaarheden moeten toevoegbaar zijn zonder core-wijzigingen.</td>
+      </tr>
+      <tr>
+        <td><strong>Elasticity</strong></td>
+        <td>Nee (impliciet)</td>
+        <td>Nee</td>
+        <td>CTF-events en schoolperiodes veroorzaken pieken. Opschalen en afschalen moet mogelijk zijn.</td>
+      </tr>
+      <tr>
+        <td><strong>Configurability</strong></td>
+        <td>Nee (impliciet)</td>
+        <td>Nee</td>
+        <td>Beginner vs. gevorderde gebruiker: persoonlijk leerpad en moeilijkheidsgraad.</td>
+      </tr>
+    </table>
+  </div>
+  <div class="practice-note">
+    <span class="practice-label">Spreekscript slide 3</span>
+    <p>De cursus vraagt 7 karakteristieken te documenteren met een top-3. We volgen de tabel zoals die in de les getoond werd: expliciet of impliciet in de klantvraag, en top-3 aanduiding.</p>
+    <p>Alle 7 zijn impliciet: de klant omschrijft enkel de functionaliteit, niet de eigenschappen. Dat is typisch voor een klantvraag.</p>
+    <p>De top-3 zijn Security, Fault Tolerance en Scalability. Die drie zijn niet willekeurig gekozen: ze vloeien rechtstreeks voort uit de aard van het systeem. Elke sandbox bevat actief gevaarlijke code. Dat legt de architecturale lat hoog voor isolatie, herstel bij uitval en onafhankelijke schaalbaarheid.</p>
+    <p>De vuistregel uit de cursus: je kan niet alles kiezen. "Good, cheap, fast — pick any two." De top-3 bepaalt de architecturale stijlkeuze.</p>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 4 — LOGISCHE COMPONENTEN METHODE
+══════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <div class="header">
+    <div><div class="eyebrow">3 · Logische componenten</div><h2>Methode: workflow approach + actor/action approach</h2></div>
+  </div>
+  <div class="content grid">
+    <div class="card">
+      <h3>Workflow approach</h3>
+      <p>Typische user journey van een student:</p>
+      <div class="flow" style="flex-wrap:wrap;gap:6px;">
+        <div class="step" style="min-height:52px;font-size:14px;">Aanmelden</div>
+        <div class="arrow" style="font-size:18px;">→</div>
+        <div class="step" style="min-height:52px;font-size:14px;">Challenge kiezen</div>
+        <div class="arrow" style="font-size:18px;">→</div>
+        <div class="step" style="min-height:52px;font-size:14px;">Sandbox starten</div>
+        <div class="arrow" style="font-size:18px;">→</div>
+        <div class="step" style="min-height:52px;font-size:14px;">Code uitvoeren</div>
+        <div class="arrow" style="font-size:18px;">→</div>
+        <div class="step" style="min-height:52px;font-size:14px;">Flag indienen</div>
+        <div class="arrow" style="font-size:18px;">→</div>
+        <div class="step" style="min-height:52px;font-size:14px;">Score bekijken</div>
+      </div>
+      <p style="margin-top:10px;font-size:16px;">Elke stap mapt op een logische component. Sterk gerelateerde stappen kunnen samen.</p>
+    </div>
+    <div class="card">
+      <h3>Actor/action approach</h3>
+      <p>Toegevoegde actor: <strong>Beheerder/Instructor</strong></p>
+      <ul>
+        <li>Challenges aanmaken en wijzigen</li>
+        <li>Sessies beëindigen, sandboxen opruimen</li>
+      </ul>
+      <p style="margin-top:10px;">→ Dit levert de <strong>Content Authoring</strong> component op, die de workflow-analyse alleen niet oplevert.</p>
+      <div class="note">Stap 2: requirements toewijzen. Stap 3: cohesie analyseren. Stap 4: toetsen aan top-3 karakteristieken.</div>
+    </div>
+  </div>
+  <div class="practice-note">
+    <span class="practice-label">Spreekscript slide 4</span>
+    <p>Componenten worden bepaald vóór een architecturale stijl gekozen wordt. De cursus geeft twee technieken: workflow approach en actor/action approach.</p>
+    <p>De workflow approach vertrekt vanuit een typische user journey: de student meldt aan, kiest een challenge, start een sandbox, voert code uit, dient een flag in en bekijkt zijn score. Elke stap levert een component op.</p>
+    <p>De actor/action approach voegt de instructor-acties toe. Die analyse levert de Content Authoring component op — die zou de workflow-analyse alleen niet opleveren, omdat de instructor geen typische student-journey doorloopt.</p>
+    <p>Daarna volgen nog stap 2 (requirements toewijzen aan componenten), stap 3 (cohesie analyseren — entity trap vermijden) en stap 4 (toetsen aan de top-3 karakteristieken).</p>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 5 — LOGISCHE COMPONENTEN RESULTAAT
+══════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <div class="header">
+    <div><div class="eyebrow">3 · Logische componenten</div><h2>7 logische componenten — voor een stijl gekozen wordt</h2></div>
+  </div>
+  <div class="content">
+    <div class="grid four small" style="grid-template-columns:repeat(4,minmax(0,1fr));">
+      <div class="card">
+        <h3>Identity &amp; Access</h3>
+        <p>Registratie, authenticatie, toegangscontrole, sessievalidatie.</p>
+      </div>
+      <div class="card">
+        <h3>Profile &amp; Learning Path</h3>
+        <p>Profieldata, niveau-instellingen, voortgang, leerpad.</p>
+      </div>
+      <div class="card">
+        <h3>Challenge Catalog</h3>
+        <p>Challenges ontsluiten, catalogus bijhouden, filtering.</p>
+      </div>
+      <div class="card">
+        <h3>Session Orchestrator</h3>
+        <p>Sessielevenscyclus beheren, sandbox-opstart aanvragen.</p>
+      </div>
+    </div>
+    <div class="grid three small" style="margin-top:14px;">
+      <div class="card" style="border-color:rgba(239,68,68,.45);">
+        <div class="accent-bar danger-bar"></div>
+        <h3 style="color:var(--bad);">Sandbox Runtime</h3>
+        <p>Code en exploits uitvoeren, output teruggeven, sandbox resetten/opruimen.</p>
+        <p style="font-size:14px;color:var(--bad);">⚠ Geïsoleerd — bevat onbetrouwbare code</p>
+      </div>
+      <div class="card">
+        <h3>Evaluation &amp; Scoring</h3>
+        <p>Flags valideren, score bepalen, feedback genereren.</p>
+      </div>
+      <div class="card">
+        <h3>Content Authoring</h3>
+        <p>Challenges aanmaken en wijzigen. Gevonden via actor/action analyse.</p>
+      </div>
+    </div>
+    <div class="note" style="margin-top:10px;">Componenten zijn geen services en geen containers. Ze zijn bepaald vóór een architecturale stijl gekozen is.</div>
+  </div>
+  <div class="practice-note">
+    <span class="practice-label">Spreekscript slide 5</span>
+    <p>De twee analyses leveren 7 logische componenten op. Dit zijn geen services, geen Docker containers — het zijn conceptuele bouwblokken met een duidelijk afgebakende verantwoordelijkheid.</p>
+    <p>De Sandbox Runtime is rood gemarkeerd: dit is de component die effectief onbetrouwbare code uitvoert. Die component vereist de sterkste isolatie, heeft de hoogste impact op security en fault tolerance, en bepaalt mee de stijlkeuze.</p>
+    <p>De koppeling met de top-3 karakteristieken is direct zichtbaar: security en fault tolerance vereisen dat Sandbox Runtime volledig geïsoleerd kan falen zonder de rest te raken. Scalability vereist dat die component onafhankelijk kan opschalen.</p>
+    <p>De mapping van logische componenten naar containers volgt later. Eerst de stijlkeuze.</p>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 6 — ALLE 4 STIJLEN AFGEWOGEN
+══════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <div class="header">
+    <div><div class="eyebrow">4 · ADR 001 — Architecturale stijl</div><h2>Alle 4 stijlen afgewogen op basis van de top-3</h2></div>
+  </div>
+  <div class="content" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;align-self:center">
+    <div class="style-col">
+      <div class="style-top" style="background:var(--bad)"></div>
+      <p style="color:var(--bad);font-weight:900;font-size:15px;text-transform:uppercase;letter-spacing:.1em;">Gelaagd ✗</p>
+      <p style="font-size:13px;margin-bottom:6px;color:var(--muted)">Technisch · Monolitisch</p>
+      <ul style="font-size:14px;">
+        <li style="color:var(--good);">Eenvoudig, goedkoop, snel</li>
+        <li style="color:var(--bad);">Sandbox kan niet apart schalen</li>
+        <li style="color:var(--bad);">Crash treft het hele systeem</li>
+        <li style="color:var(--bad);">Domeinwijzigingen door alle lagen</li>
+      </ul>
+      <p style="font-size:13px;margin-top:10px;color:var(--bad);">Valt af: fault tolerance en scalability onhaalbaar.</p>
+    </div>
+    <div class="style-col">
+      <div class="style-top" style="background:var(--bad)"></div>
+      <p style="color:var(--bad);font-weight:900;font-size:15px;text-transform:uppercase;letter-spacing:.1em;">Microkernel ✗</p>
+      <p style="font-size:13px;margin-bottom:6px;color:var(--muted)">Technisch · Monolitisch</p>
+      <ul style="font-size:14px;">
+        <li style="color:var(--good);">Extensibility sterk via plugins</li>
+        <li style="color:var(--good);">Agility voor nieuwe challenge-types</li>
+        <li style="color:var(--bad);">Monolitisch deployment</li>
+        <li style="color:var(--bad);">Plugin-crash kan kern destabiliseren</li>
+      </ul>
+      <p style="font-size:13px;margin-top:10px;color:var(--bad);">Valt af: fault tolerance onvoldoende door monolitisch deployment.</p>
+    </div>
+    <div class="style-col second">
+      <div class="style-top warn-bar"></div>
+      <p style="color:var(--warn);font-weight:900;font-size:15px;text-transform:uppercase;letter-spacing:.1em;">Modulaire monoliet ②</p>
+      <p style="font-size:13px;margin-bottom:6px;color:var(--muted)">Domein · Monolitisch</p>
+      <ul style="font-size:14px;">
+        <li style="color:var(--good);">Domeinpartitionering klopt</li>
+        <li style="color:var(--good);">Haalbaar voor klein team</li>
+        <li style="color:var(--warn);">Alles-of-niets deployment</li>
+        <li style="color:var(--warn);">Sandbox niet apart schaalbaar</li>
+      </ul>
+      <p style="font-size:13px;margin-top:10px;color:var(--warn);">Tweede keuze: grenzen al vastgelegd, migratie naar MS is de bekende weg.</p>
+    </div>
+    <div class="style-col chosen">
+      <div class="style-top green-bar"></div>
+      <p style="color:var(--good);font-weight:900;font-size:15px;text-transform:uppercase;letter-spacing:.1em;">Microservices ✓</p>
+      <p style="font-size:13px;margin-bottom:6px;color:var(--muted)">Domein · Gedistribueerd</p>
+      <ul style="font-size:14px;">
+        <li style="color:var(--good);">Sandbox volledig geïsoleerd deploybaar</li>
+        <li style="color:var(--good);">Onafhankelijke schaalbaarheid</li>
+        <li style="color:var(--good);">Crash blijft lokaal</li>
+        <li style="color:var(--warn);">Hogere complexiteit, data ownership</li>
+      </ul>
+      <p style="font-size:13px;margin-top:10px;color:var(--good);">Enige stijl die de top-3 structureel garandeert.</p>
+    </div>
+  </div>
+  <div class="practice-note">
+    <span class="practice-label">Spreekscript slide 6</span>
+    <p>De cursus verplicht alle stijlen in overweging te nemen. We doen dat expliciet aan de hand van de top-3 karakteristieken.</p>
+    <p>Gelaagde architectuur valt af: de Sandbox Runtime kan niet onafhankelijk schalen en een crash treft het hele systeem. Dat druist in tegen fault tolerance en scalability.</p>
+    <p>Microkernel valt af om dezelfde reden: het deployment is monolitisch. Een plugin-crash kan de kern destabiliseren. De extensibility-voordelen zijn reëel maar onvoldoende om de fault tolerance-tekortkoming te compenseren.</p>
+    <p>Modulaire monoliet is de tweede keuze. De domeinpartitionering sluit perfect aan bij onze logische componenten. Maar het is nog steeds alles-of-niets deployment — de Sandbox Runtime kan niet apart schalen of falen.</p>
+    <p>Microservices is de keuze: het is de enige stijl die toelaat dat de Sandbox Runtime volledig geïsoleerd draait, onafhankelijk schaalt en faalt zonder andere services te raken. De hogere complexiteit is geen optie maar een noodzakelijke kost van de karakteristieken.</p>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 7 — ADR 001 TRADE-OFFS
+══════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <div class="header">
+    <div><div class="eyebrow">4 · ADR 001 — Trade-offs</div><h2>Geaccepteerde complexiteit en gekozen mitigaties</h2></div>
+  </div>
+  <div class="content grid">
+    <div class="card no">
+      <div class="label">Geaccepteerde complexiteit</div>
+      <ul>
+        <li>Data ownership moet per service expliciet vastgelegd worden.</li>
+        <li>Communicatie over netwerk: latency en gedistribueerde failures.</li>
+        <li>Observability vereist extra tooling (distributed tracing).</li>
+        <li>Gedistribueerde transacties zijn complexer dan lokale.</li>
+        <li>All-round teamleden nodig — geen domeinspecialisatie per team.</li>
+      </ul>
+    </div>
+    <div class="card yes">
+      <div class="label">Hoe we dit beheersen</div>
+      <ul>
+        <li><strong>Data ownership:</strong> ADR 003 legt dit expliciet vast per service.</li>
+        <li><strong>Communicatie:</strong> ADR 002 maakt bewust onderscheid synchroon/asynchroon.</li>
+        <li><strong>Observability:</strong> elk POC heeft logging; productie vereist OTEL (les 8).</li>
+        <li><strong>Team:</strong> team van 4 is groter dan minimum, elk lid verantwoordelijk voor één POC.</li>
+      </ul>
+      <div class="note">Als het team kleiner zou zijn → modulaire monoliet. Migratie naar microservices is haalbaar vanuit dat fundament (spectrum-diagram les 7).</div>
+    </div>
+  </div>
+  <div class="practice-note">
+    <span class="practice-label">Spreekscript slide 7</span>
+    <p>Microservices zijn duur. De cursus is daar heel eerlijk over: de star-ratings tonen dat microservices hoog scoren op schaalbaarheid en fouttolerantie maar laag op eenvoud en performance door overhead.</p>
+    <p>We accepteren die complexiteit bewust omdat de alternatieve kost — een systeem dat niet fault-tolerant of schaalbaar is voor sandbox-omgevingen — onaanvaardbaar is voor dit specifiek systeem.</p>
+    <p>De complexiteit beheersen we via de bijkomende ADR's: data ownership (ADR 003) en communicatiemodel (ADR 002) zijn de twee grootste uitdagingen bij microservices, en beiden krijgen een eigen ADR.</p>
+    <p>Als het team kleiner zou zijn dan 4 of het budget strakker, zou de modulaire monoliet de keuze zijn. De les toont het spectrum: vanuit een modulaire monoliet kan je later services afsplitsen naarmate de domeinkennis groeit.</p>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 8 — ADR 002 COMMUNICATIE
+══════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <div class="header">
+    <div><div class="eyebrow">5 · ADR 002 — Communicatie tussen services</div><h2>Hybride model: synchroon waar nodig, asynchroon waar mogelijk</h2></div>
+  </div>
+  <div class="content">
+    <div class="grid" style="margin-bottom:16px;">
+      <div class="card yes">
+        <div class="label">Synchroon (REST) — tijdskritisch</div>
+        <ul>
+          <li>Challenge-overzicht opvragen → gebruiker wacht</li>
+          <li>Sandbox starten → sessie moet bevestigd worden</li>
+          <li>Flag indienen → directe feedback gewenst</li>
+          <li>Voortgang opvragen → directe weergave</li>
+        </ul>
+      </div>
+      <div class="card warn-card">
+        <div class="label">Asynchroon (AMQP/RabbitMQ) — events</div>
+        <ul>
+          <li>Submission Validator → Progress Tracker: score opslaan</li>
+          <li>Content Manager → Challenge Catalog: nieuwe challenge publiceren</li>
+          <li>Sandbox Provisioner → andere services: crash of stop-event</li>
+        </ul>
+      </div>
+    </div>
+    <div class="flow">
+      <div class="step" style="font-size:14px;">Student dient<br>flag in</div>
+      <div class="arrow">→</div>
+      <div class="step" style="font-size:14px;">Validator<br>(synchroon)</div>
+      <div class="arrow">→</div>
+      <div class="step" style="font-size:14px;background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.3);">Queue<br>(asynchroon)</div>
+      <div class="arrow">→</div>
+      <div class="step" style="font-size:14px;">Progress Tracker<br>bijwerken</div>
+    </div>
+    <div class="note" style="margin-top:10px;">Bron: Two Many Sneakers case (les 3) — queues vs. web services als trade-off voor communicatie tussen diensten. Tabel: web services = sterke koppeling, queues = zwakkere koppeling maar extra infrastructuur.</div>
+  </div>
+  <div class="practice-note">
+    <span class="practice-label">Spreekscript slide 8</span>
+    <p>ADR 002 kiest een hybride communicatiemodel. De cursus toont in les 3 aan de hand van de Two Many Sneakers case de drie opties: web services, queues en topics. De vergelijkingstabel maakt de trade-offs expliciet.</p>
+    <p>We gebruiken REST voor tijdskritische calls waarbij de gebruiker op een antwoord wacht. We gebruiken RabbitMQ queues voor events waarbij de aanroeper niet hoeft te wachten op verwerking.</p>
+    <p>Het voorbeeld op de slide is het duidelijkste geval: een student dient een flag in en wil direct weten of die correct is. Dat is synchroon. Maar de score opslaan in de Progress Tracker hoeft niet meteen — dat kan asynchroon via een queue. Als de Progress Tracker tijdelijk offline is, gaat het bericht niet verloren.</p>
+    <p>De geaccepteerde complexiteit: we hebben queue-infrastructuur nodig, asynchrone flows zijn moeilijker te debuggen, en eventual consistency moet bewust aanvaard worden.</p>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 9 — ADR 003 DATA OWNERSHIP
+══════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <div class="header">
+    <div><div class="eyebrow">5 · ADR 003 — Data ownership</div><h2>Elke service beheert zijn eigen schema — geen gedeelde tabellen</h2></div>
+  </div>
+  <div class="content">
+    <table class="matrix" style="margin-bottom:14px;">
+      <tr>
+        <th>Service</th>
+        <th>Schema</th>
+        <th>Wat er in zit</th>
+        <th>Communicatie voor data van anderen</th>
+      </tr>
+      <tr><td><strong>User Management</strong></td><td>users</td><td>Accounts, rollen, wachtwoorden</td><td>JWT-token (ADR 005)</td></tr>
+      <tr><td><strong>Challenge Catalog</strong></td><td>catalog</td><td>Challenge-metadata, leerpaden</td><td>REST of queue-event</td></tr>
+      <tr><td><strong>Submission Validator</strong></td><td>submissions</td><td>Ingediende antwoorden, flags</td><td>Queue-event naar Progress Tracker</td></tr>
+      <tr><td><strong>Progress Tracker</strong></td><td>progress</td><td>Scores, voortgang, achievements</td><td>Eigen data alleen</td></tr>
+      <tr><td><strong>Content Manager</strong></td><td>content</td><td>Challenge-definities, sandbox-specs</td><td>Queue-event naar Catalog</td></tr>
+    </table>
+    <div class="grid">
+      <div class="card yes">
+        <div class="label">Voordelen</div>
+        <ul>
+          <li>Schemawijzigingen zijn lokaal en breken andere services niet.</li>
+          <li>Services zijn onafhankelijk testbaar en deploybaar.</li>
+          <li>Data ownership is expliciet en traceerbaar.</li>
+        </ul>
+      </div>
+      <div class="card no">
+        <div class="label">Geaccepteerde kost</div>
+        <ul>
+          <li>Geen directe JOIN over servicegrenzen — composities in code.</li>
+          <li>Mogelijke dataduplicatie (bv. gebruikersnaam zichtbaar in score).</li>
+          <li>Eventual consistency bij asynchrone updates.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="practice-note">
+    <span class="practice-label">Spreekscript slide 9</span>
+    <p>ADR 003 is de directe uitwerking van het data ownership principe uit les 7 (StayHealthy, Inc. case). De kernregel: geen enkele service leest of schrijft rechtstreeks in het schema van een andere service.</p>
+    <p>Concreet: als de Submission Validator de naam van de gebruiker wil tonen bij een score, mag die niet direct in de users-tabel van User Management kijken. Die informatie komt via de JWT-token of via een API-call.</p>
+    <p>Dit kost iets: JOINs over servicegrenzen zijn niet mogelijk, data moet soms gedupliceerd worden, en eventual consistency is een reëel fenomeen. Maar de winst is groter: schemawijzigingen in één service breken andere services niet.</p>
+    <p>Implementatiekeuze voor de POC en voor een kleine productie: alle schema's op één fysieke databaseserver, maar strikte scheiding per service via afzonderlijke databases. Netwerkconfiguratie verhindert directe toegang.</p>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 10 — ADR 004 SANDBOX ISOLATIE
+══════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <div class="header">
+    <div><div class="eyebrow">5 · ADR 004 — Sandbox-isolatie</div><h2>Hoe isoleren we omgevingen waar onbetrouwbare code in draait?</h2></div>
+  </div>
+  <div class="content grid">
+    <div>
+      <div class="grid three small" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px;">
+        <div class="card no" style="text-align:center;">
+          <div class="label">Procesisolatie</div>
+          <p>OS-niveau isolatie. Snelst, maar zwakst. Container escape is reëel risico.</p>
+        </div>
+        <div class="card yes" style="text-align:center;border-color:rgba(34,197,94,.5);">
+          <div class="label">Containerisolatie ✓</div>
+          <p>Docker met strikte config. Snel opstarten (seconden). Beheersbaar voor ons team.</p>
+        </div>
+        <div class="card" style="text-align:center;">
+          <div class="label">VM-isolatie</div>
+          <p>Sterkste garanties (Firecracker). Te complex voor huidige team en budget.</p>
+        </div>
+      </div>
+      <div class="card yes">
+        <div class="label">Gekozen configuratie: Docker containers</div>
+        <ul>
+          <li><code>cap_drop: ALL</code> — alle Linux capabilities verwijderd</li>
+          <li><code>read_only: true</code> — bestandssysteem alleen-lezen</li>
+          <li><code>no-new-privileges: true</code> — privilege escalation geblokkeerd</li>
+          <li>CPU en geheugen gelimiteerd per container</li>
+          <li>Geïsoleerd overlay netwerk — geen egress naar platform</li>
+          <li>Per sessie aangemaakt en na gebruik vernietigd</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div class="card no" style="margin-bottom:14px;">
+        <div class="label">Bewust niet gekozen: VM-isolatie</div>
+        <p>VM's bieden sterkere garanties maar starten in minuten in plaats van seconden. Voor een leersessie is dat een onaanvaardbare gebruikerservaring. Bij een groter budget of strengere security-eisen zou Firecracker overwogen worden.</p>
+      </div>
+      <div class="card warn-card">
+        <div class="label">Geaccepteerd risico</div>
+        <ul>
+          <li>Container escapes zijn reëel als configuratie niet correct is.</li>
+          <li>Host-OS moet gehard worden (buiten scope POC).</li>
+          <li>Security-config vereist expliciete review bij elke wijziging.</li>
+        </ul>
+        <p style="margin-top:8px;font-size:15px;">Governance: geen privileged containers zonder nieuwe ADR. Config in versiebeheer.</p>
+      </div>
+    </div>
+  </div>
+  <div class="practice-note">
+    <span class="practice-label">Spreekscript slide 10</span>
+    <p>ADR 004 is de architecturale vertaling van de top-1 karakteristiek: security. Gebruikers voeren exploits uit — dat betekent dat de sandbox de gevaarlijkste component van het systeem is.</p>
+    <p>We wegen drie opties af: procesisolatie is te zwak voor onbetrouwbare code. VM-isolatie is het sterkst maar start te traag op voor een leersessie. Containerisolatie met strikte configuratie biedt een aanvaardbaar evenwicht.</p>
+    <p>De concrete configuratie: cap_drop ALL verwijdert alle Linux capabilities, read_only maakt het bestandssysteem niet beschrijfbaar buiten /tmp, no-new-privileges blokkeert escalatie, en het netwerk is volledig geïsoleerd van het platform.</p>
+    <p>Het geaccepteerde risico: container escapes zijn mogelijk als de configuratie fout is. Dat is precies waarom governance vereist dat elke configuratiewijziging via code review gaat en privileged containers een nieuwe ADR vereisen.</p>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 11 — ADR 005 AUTHENTICATIE
+══════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <div class="header">
+    <div><div class="eyebrow">5 · ADR 005 — Authenticatie &amp; autorisatie</div><h2>Gedistribueerde JWT-validatie — geen single point of failure</h2></div>
+  </div>
+  <div class="content">
+    <div class="grid" style="margin-bottom:14px;">
+      <div class="card yes">
+        <div class="label">Gekozen: hybride aanpak (RS256)</div>
+        <ul>
+          <li><strong>Centrale uitgifte:</strong> User Management geeft JWT's uit ondertekend met private key.</li>
+          <li><strong>Gedistribueerde validatie:</strong> alle services valideren lokaal met public key — geen call naar User Management per request.</li>
+          <li><strong>Rollen in het token:</strong> elke service beslist zelf op basis van de rol in het JWT.</li>
+        </ul>
+        <div class="note">Bron: OAuth-les (les 9) — authorization server / resource server / RS256 asymmetrisch.</div>
+      </div>
+      <div class="card no">
+        <div class="label">Niet gekozen: centrale validatie per request</div>
+        <p>Als elke service de authenticatieservice raadpleegt bij elk request, wordt User Management een <strong>single point of failure</strong> en een performance-bottleneck. Dit druist in tegen availability en scalability.</p>
+        <p style="margin-top:8px;">Bij een groter budget: Keycloak als volwaardige identity provider (demo in les 9). Voor ons team: zelfgebouwde JWT-service is haalbaar en onderhoudbaar.</p>
+      </div>
+    </div>
+    <div class="flow">
+      <div class="step" style="font-size:13px;">Login →<br>User Mgmt<br>(private key)</div>
+      <div class="arrow">→</div>
+      <div class="step" style="font-size:13px;">JWT token<br>RS256</div>
+      <div class="arrow">→</div>
+      <div class="step" style="font-size:13px;">Gateway<br>(public key)<br>rate limit</div>
+      <div class="arrow">→</div>
+      <div class="step" style="font-size:13px;">Catalog<br>(public key)<br>zelfstandig</div>
+      <div class="arrow">→</div>
+      <div class="step" style="font-size:13px;">Validator<br>(public key)<br>zelfstandig</div>
+    </div>
+    <div class="note" style="margin-top:10px;">Kerntest POC 3: User Management uitschakelen na login → Catalog en Validator blijven werken. Token vervalt na 1 uur.</div>
+  </div>
+  <div class="practice-note">
+    <span class="practice-label">Spreekscript slide 11</span>
+    <p>ADR 005 is de architecturale uitwerking van de security-karakteristiek op service-niveau. Het platform heeft studenten, instructors en beheerders — elke service moet weten wie een request doet en of die persoon de actie mag uitvoeren.</p>
+    <p>We kozen een hybride aanpak. User Management is de authorization server (term uit de OAuth-les): die geeft JWT-tokens uit ondertekend met een private RSA-key. Andere services zijn resource servers: ze valideren het token met de public key zonder User Management te contacteren.</p>
+    <p>Het grote voordeel: als User Management uitvalt na het uitgifte van tokens, blijven andere services werken. Geen single point of failure bij runtime. Dit is precies wat de OAuth-les toont als het voordeel van asymmetrische cryptografie en gedistribueerde validatie.</p>
+    <p>De credentials voor de keys worden via Docker Swarm secrets verspreid — zelfde patroon als de RabbitMQ Erlang cookie in de labo's.</p>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 12 — MAPPING LOGISCHE COMPONENTEN → CONTAINERS
+══════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <div class="header">
+    <div><div class="eyebrow">6 · C4-model</div><h2>Van logische componenten naar deploybare containers</h2></div>
+  </div>
+  <div class="content">
+    <table class="matrix">
+      <tr>
+        <th>Logische component</th>
+        <th>Container in C4</th>
+        <th>Technologie</th>
+        <th>Waarom die naam verschilt</th>
+      </tr>
+      <tr><td>Identity &amp; Access</td><td><strong>User Management Service</strong></td><td>Node.js, Express, JWT</td><td>Containernaam beschrijft de implementatie; logische naam beschrijft de verantwoordelijkheid.</td></tr>
+      <tr><td>Profile &amp; Learning Path</td><td><strong>Progress Tracker Service</strong></td><td>Node.js, Express</td><td>De implementatie focust op het bijhouden van voortgang en scores.</td></tr>
+      <tr><td>Challenge Catalog</td><td><strong>Challenge Catalog Service</strong></td><td>Node.js, Express</td><td>Naam identiek — verantwoordelijkheid is duidelijk genoeg.</td></tr>
+      <tr><td>Session Orchestrator</td><td><strong>Sandbox Provisioner Service</strong></td><td>Python, Docker SDK</td><td>Implementatie beheert Docker containers — provisioning is de technische activiteit.</td></tr>
+      <tr><td>Sandbox Runtime</td><td><strong>Sandbox Runtime</strong></td><td>Docker, seccomp+AppArmor</td><td>Naam identiek — het is de uitvoeringsomgeving zelf.</td></tr>
+      <tr><td>Evaluation &amp; Scoring</td><td><strong>Submission Validator Service</strong></td><td>Node.js, Express</td><td>Implementatie valideert submissions — dat is de concrete handeling.</td></tr>
+      <tr><td>Content Authoring</td><td><strong>Content Manager Service</strong></td><td>Node.js, Express</td><td>Implementatie beheert challenge-inhoud.</td></tr>
+    </table>
+    <div class="note" style="margin-top:10px;">Aanvullend: API Gateway (façade, geen logisch component) en Message Broker (RabbitMQ, infrastructuur) worden toegevoegd bij de containerlaag.</div>
+  </div>
+  <div class="practice-note">
+    <span class="practice-label">Spreekscript slide 12</span>
+    <p>De logische componenten en de C4-containers hebben bewust verschillende namen. De cursus legt uit dat logische componenten conceptueel zijn — ze beschrijven verantwoordelijkheid. Containers zijn deploybaar — ze beschrijven implementatie.</p>
+    <p>Session Orchestrator wordt Sandbox Provisioner Service omdat de concrete implementatie via de Docker SDK containers provisioneert. De logische naam "orchestrator" is te generiek als containernaam.</p>
+    <p>Twee elementen worden pas bij de containerlaag toegevoegd: de API Gateway als enig extern toegangspunt (geen logisch component — het is infrastructuur) en de Message Broker als asynchrone event-bus (ook infrastructuur, niet een logisch bouwblok van het domein).</p>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 13 — C4 SYSTEEMCONTEXT
+══════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <div class="header">
+    <div><div class="eyebrow">6 · C4 Niveau 1 — Systeemcontext</div><h2>Wie gebruikt het systeem? Welke externe afhankelijkheden?</h2></div>
+  </div>
+  <div class="content grid">
+    <div style="display:flex;align-items:center;justify-content:center;">
+      <img src="https://imgur.com/lV7YjaT" alt="Systeemcontextdiagram" style="max-width:100%;max-height:55vh;object-fit:contain;border-radius:16px;box-shadow:var(--shadow);">
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:14px;">
+        <h3>Actoren</h3>
+        <ul>
+          <li><strong>Student:</strong> leert hacken via uitvoerbare challenges.</li>
+          <li><strong>Instructor:</strong> maakt challenges aan en beheert sessies.</li>
+        </ul>
+      </div>
+      <div class="card yes">
+        <div class="label">Geen externe platformen</div>
+        <p>HackLab heeft bewust geen externe authentication provider (geen GitHub OAuth, geen Google). User Management is onze eigen authorization server — conform ADR 005.</p>
+        <p>Bij een groter budget: Keycloak als externe identity provider. Voor versie 1 is een eigen JWT-service haalbaar en volledig onder controle.</p>
+      </div>
+    </div>
+  </div>
+  <div class="practice-note">
+    <span class="practice-label">Spreekscript slide 13</span>
+    <p>Het systeemcontextdiagram toont het systeem op het hoogste niveau: welke mensen gebruiken het, en welke externe systemen zijn er?</p>
+    <p>Er zijn twee actoren: de Student die challenges uitvoert, en de Instructor die challenges aanmaakt en beheert.</p>
+    <p>Er zijn geen externe platformen. Dit is een bewuste keuze die ook bij de feedback op de diagrammen als punt naar voren kwam. We gebruiken geen GitHub OAuth of Google login omdat onze eigen User Management service de authorization server is (ADR 005). Als er een externe identity provider nodig was, zou die hier als extern systeem verschijnen.</p>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 14 — C4 CONTAINERDIAGRAM
+══════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <div class="header">
+    <div><div class="eyebrow">6 · C4 Niveau 2 — Containerdiagram</div><h2>Services, communicatie en legende</h2></div>
+  </div>
+  <div class="content grid" style="grid-template-columns:1.6fr 1fr;">
+    <div style="display:flex;align-items:center;">
+      <img src="https://imgur.com/qovNOV7" alt="Containerdiagram" style="max-width:100%;max-height:60vh;object-fit:contain;border-radius:14px;box-shadow:var(--shadow);">
+    </div>
+    <div class="small">
+      <div class="card" style="margin-bottom:12px;">
+        <h3>Legende</h3>
+        <ul style="font-size:15px;">
+          <li><span style="display:inline-block;width:12px;height:12px;background:#438dd5;border-radius:3px;margin-right:6px;vertical-align:middle;"></span><strong>Blauw</strong> — services en databases</li>
+          <li><span style="display:inline-block;width:12px;height:12px;background:#e6a118;border-radius:3px;margin-right:6px;vertical-align:middle;"></span><strong>Oranje</strong> — Message Broker (asynchrone event-bus)</li>
+          <li><span style="display:inline-block;width:12px;height:12px;background:#e03030;border-radius:3px;margin-right:6px;vertical-align:middle;"></span><strong>Rood</strong> — Sandbox Runtime (gevaarlijke uitvoeringsomgeving)</li>
+          <li><span style="display:inline-block;width:14px;height:14px;background:#2e6da4;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);margin-right:6px;vertical-align:middle;"></span><strong>Zeshoek</strong> — API Gateway (enkel extern toegangspunt)</li>
+          <li style="margin-top:8px;">——— Volle lijn = synchroon (REST)</li>
+          <li style="color:var(--async);">- - - Stippellijn = asynchroon (AMQP)</li>
+        </ul>
+      </div>
+      <div class="card warn-card">
+        <div class="label">Sandbox Runtime — waarom rood?</div>
+        <p style="font-size:15px;">Dit is de enige container die onbetrouwbare, door gebruikers geschreven code uitvoert. Rood markeert de veiligheidsgrens van het systeem.</p>
+        <ul style="font-size:14px;">
+          <li>Geen netwerktoegang tot het platform</li>
+          <li>Enkel bereikbaar via Provisioner en Interface</li>
+          <li>seccomp + AppArmor actief</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="practice-note">
+    <span class="practice-label">Spreekscript slide 14</span>
+    <p>Het containerdiagram toont de deploybare eenheden en hun communicatie. De legende is bewust toegevoegd — de cursus zegt dat kleur en vorm geen betekenis hebben tenzij opgenomen in een legende.</p>
+    <p>De volle lijnen zijn synchrone REST-calls. De oranje stippellijnen zijn asynchrone AMQP-calls via de Message Broker. Dit is de directe visuele vertaling van ADR 002.</p>
+    <p>De Sandbox Runtime is rood. Dat was een vraagpunt bij de feedback op de diagrammen: waarom rood? Het antwoord: dit is de enige container die effectief onbetrouwbare code uitvoert. Het systeem is zo ontworpen dat een gecompromitteerde Sandbox Runtime nooit de rest van het platform kan bereiken — geen netwerktoegang, enkel bereikbaar via twee specifieke services.</p>
+    <p>De API Gateway is een zeshoek omdat het de enige externe toegangspoort is — een visuele aanduiding van zijn bijzondere rol als facade voor alle externe clients.</p>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 15 — C4 DEPLOYMENT
+══════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <div class="header">
+    <div><div class="eyebrow">6 · C4 Niveau 3 — Deployment</div><h2>Docker Swarm: 3 managers + 2 workers — elke keuze verantwoord</h2></div>
+  </div>
+  <div class="content grid" style="grid-template-columns:1.6fr 1fr;">
+    <div style="display:flex;align-items:center;">
+      <img src="https://imgur.com/qovNOV7" alt="Deployment diagram" style="max-width:100%;max-height:60vh;object-fit:contain;border-radius:14px;box-shadow:var(--shadow);">
+    </div>
+    <div class="small">
+      <div class="card" style="margin-bottom:12px;border-color:rgba(12,61,110,.8);background:rgba(12,61,110,.2);">
+        <h3 style="color:#6db3f2;">Manager Nodes (×3)</h3>
+        <ul style="font-size:15px;">
+          <li>Web Application + API Gateway (HA)</li>
+          <li>User Management (authenticatie, altijd beschikbaar)</li>
+          <li>Message Broker (persistentie)</li>
+          <li>Alle 5 databases (named volumes)</li>
+        </ul>
+        <p style="font-size:13px;color:var(--muted);margin-top:6px;">Extern bereikbaar of kritiek voor beschikbaarheid.</p>
+      </div>
+      <div class="card" style="border-color:rgba(122,31,31,.8);background:rgba(122,31,31,.15);">
+        <h3 style="color:#f87171;">Worker Nodes (×2)</h3>
+        <ul style="font-size:15px;">
+          <li>Challenge Catalog</li>
+          <li>Progress Tracker</li>
+          <li>Challenge Interface</li>
+          <li>Sandbox Provisioner</li>
+          <li>Content Manager + Submission Validator</li>
+          <li style="color:var(--bad);">Sandbox Runtime (geïsoleerd)</li>
+        </ul>
+        <p style="font-size:13px;color:var(--muted);margin-top:6px;">Geen direct extern verkeer. Sandbox Runtime nooit op managers.</p>
+      </div>
+    </div>
+  </div>
+  <div class="practice-note">
+    <span class="practice-label">Spreekscript slide 15</span>
+    <p>De testcluster heeft 3 managers en 2 workers zoals de opdracht vermeldt. De verdeling is architecturaal verantwoord, niet willekeurig.</p>
+    <p>Op de managers draaien de extern bereikbare services (Web App, API Gateway) en kritieke infrastructuur (User Management voor continue authenticatie, Message Broker voor event-persistentie, databases met named volumes voor data-persistentie).</p>
+    <p>Op de workers draaien de challenge-gerelateerde services en de Sandbox Runtime. De kernreden: een gecompromitteerde Sandbox Runtime mag nooit op een Swarm manager terechtkomen. Managers beheren de cluster — als een aanvaller via een sandbox-container een manager bereikt, heeft hij toegang tot het Raft-consensus mechanisme van de volledige cluster.</p>
+    <p>Challenge Catalog en Progress Tracker draaien ook op workers: ze zijn niet extern bereikbaar en hoeven geen hoge beschikbaarheid via de manager-laag.</p>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 16 — POC OVERZICHT
+══════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <div class="header">
+    <div><div class="eyebrow">7 · Proofs of Concept</div><h2>4 POC's — elk één technische vraag, elk een ADR-bewijs</h2></div>
+  </div>
+  <div class="content grid four small" style="grid-template-columns:repeat(4,minmax(0,1fr));">
+    <div class="card" style="border-top:4px solid var(--bad);">
+      <h3 style="color:var(--bad);">POC 1</h3>
+      <p style="font-weight:800;color:var(--text);">Container Isolation</p>
+      <p>Valideert: <strong>ADR 004</strong></p>
+      <p>Kan een Docker container veilig geïsoleerd draaien voor onbetrouwbare code?</p>
+      <ul>
+        <li>cap_drop ALL — geen capabilities</li>
+        <li>read_only bestandssysteem</li>
+        <li>Resource limits actief</li>
+        <li>Stress-test bewijst containment</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top:4px solid var(--warn);">
+      <h3 style="color:var(--warn);">POC 2</h3>
+      <p style="font-weight:800;color:var(--text);">Sandbox Failure Recovery</p>
+      <p>Valideert: <strong>ADR 001 + ADR 004</strong></p>
+      <p>Als één sandbox crasht, blijven andere omgevingen operationeel?</p>
+      <ul>
+        <li>Docker Swarm reconciliation</li>
+        <li>Gewenste vs. geobserveerde toestand</li>
+        <li>Automatisch herstel zonder impact</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top:4px solid var(--accent);">
+      <h3 style="color:var(--accent);">POC 3</h3>
+      <p style="font-weight:800;color:var(--text);">Distributed JWT Validation</p>
+      <p>Valideert: <strong>ADR 005</strong></p>
+      <p>Valideren services JWT's zelfstandig ook als User Management offline is?</p>
+      <ul>
+        <li>RS256, private/public key split</li>
+        <li>Docker Swarm secrets</li>
+        <li>7 geautomatiseerde testscenario's</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top:4px solid var(--good);">
+      <h3 style="color:var(--good);">POC 4</h3>
+      <p style="font-weight:800;color:var(--text);">Async Voortgangsregistratie</p>
+      <p>Valideert: <strong>ADR 002 + ADR 003</strong></p>
+      <p>Kan indiening asynchroon verwerkt worden ook bij tijdelijke uitval?</p>
+      <ul>
+        <li>RabbitMQ durable queues</li>
+        <li>Progress Tracker offline → berichten bewaard</li>
+        <li>Bij herstart alsnog verwerkt</li>
+      </ul>
+    </div>
+  </div>
+  <div class="note" style="margin-top:10px;">Elke POC: <code>docker stack deploy -c poc.yaml poc</code> · aparte directory · README.md met teststappen.</div>
+  <div class="practice-note">
+    <span class="practice-label">Spreekscript slide 16</span>
+    <p>De opdracht vraagt 4 POC's (één per groepslid) voor de meest uitdagende aspecten. Elk POC beantwoordt één scherpe technische vraag en is direct gekoppeld aan een ADR.</p>
+    <p>POC 1 bewijst ADR 004: de Docker-configuratie is streng genoeg om sandbox-omgevingen veilig te isoleren. Een stress-test toont dat resource exhaustion in één container de host niet raakt.</p>
+    <p>POC 2 bewijst ADR 001 en 004: Docker Swarm's reconciliation-mechanisme (verschil gewenste vs. geobserveerde toestand, les 2) herstelt een gecrashe container automatisch. Andere containers blijven onaangetast.</p>
+    <p>POC 3 bewijst ADR 005: RS256 JWT-tokens worden lokaal gevalideerd. De kerntest: User Management uitschakelen na login — andere services blijven werken.</p>
+    <p>POC 4 bewijst ADR 002 en 003: RabbitMQ durable queues bufferen berichten als de Progress Tracker tijdelijk offline is. Bij herstart worden de berichten alsnog verwerkt.</p>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 17 — POC 3 DEEP DIVE
+══════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <div class="header">
+    <div><div class="eyebrow">7 · POC 3 — Diepgang</div><h2>Distributed JWT Validation — 7 testscenario's</h2></div>
+  </div>
+  <div class="content grid">
+    <div>
+      <div class="card" style="margin-bottom:12px;">
+        <h3>Architectuur van de POC</h3>
+        <div class="flow" style="flex-wrap:wrap;gap:6px;margin-top:10px;">
+          <div class="step" style="min-height:60px;font-size:13px;background:rgba(6,182,212,.15);border-color:rgba(6,182,212,.4);">User Mgmt<br><span style="font-size:11px;font-weight:400;color:var(--muted)">private key</span></div>
+          <div class="arrow">→</div>
+          <div class="step" style="min-height:60px;font-size:13px;">API Gateway<br><span style="font-size:11px;font-weight:400;color:var(--muted)">public key + rate limit</span></div>
+          <div class="arrow">→</div>
+          <div class="step" style="min-height:60px;font-size:13px;">Catalog<br><span style="font-size:11px;font-weight:400;color:var(--muted)">public key</span></div>
+        </div>
+        <div class="flow" style="flex-wrap:wrap;gap:6px;margin-top:8px;">
+          <div class="step" style="min-height:40px;font-size:13px;width:100%;text-align:left;padding:6px 12px;">Submission Validator — public key — zelfstandige validatie</div>
+        </div>
+      </div>
+      <div class="card warn-card">
+        <div class="label">Geleerde lessen</div>
+        <ul style="font-size:15px;">
+          <li><code>docker stack deploy</code> gebruikt <strong>-c</strong>, niet -f (fout in opdrachttekst)</li>
+          <li>Ubuntu resolvet <code>localhost</code> naar IPv6 (::1) — Swarm publiceert enkel IPv4 → gebruik <code>127.0.0.1</code></li>
+          <li>Credentials in code → Docker Swarm secrets (zelfde patroon als RSA-keys)</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card">
+      <h3>7 geautomatiseerde testscenario's</h3>
+      <table style="width:100%;font-size:14px;border-collapse:collapse;">
+        <tr style="border-bottom:1px solid var(--line);"><td style="padding:6px 4px;color:var(--accent);font-weight:800;">#1</td><td style="padding:6px 4px;color:var(--muted);">Login → JWT RS256 terug</td></tr>
+        <tr style="border-bottom:1px solid var(--line);"><td style="padding:6px 4px;color:var(--accent);font-weight:800;">#2</td><td style="padding:6px 4px;color:var(--muted);">Token via gateway (rate limiting)</td></tr>
+        <tr style="border-bottom:1px solid var(--line);"><td style="padding:6px 4px;color:var(--accent);font-weight:800;">#3</td><td style="padding:6px 4px;color:var(--muted);">Direct bij Catalog — lokale validatie</td></tr>
+        <tr style="border-bottom:1px solid var(--line);"><td style="padding:6px 4px;color:var(--accent);font-weight:800;">#4</td><td style="padding:6px 4px;color:var(--muted);">Direct bij Validator — lokale validatie</td></tr>
+        <tr style="border-bottom:1px solid var(--line);background:rgba(245,158,11,.08);"><td style="padding:6px 4px;color:var(--warn);font-weight:800;">#5 ★</td><td style="padding:6px 4px;color:var(--warn);font-weight:700;">User Mgmt offline → systeem werkt nog</td></tr>
+        <tr style="border-bottom:1px solid var(--line);"><td style="padding:6px 4px;color:var(--accent);font-weight:800;">#6</td><td style="padding:6px 4px;color:var(--muted);">Vervalst token (admin-claim) → 401</td></tr>
+        <tr><td style="padding:6px 4px;color:var(--accent);font-weight:800;">#7</td><td style="padding:6px 4px;color:var(--muted);">Rate limit &gt;5 req/min → 429</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="practice-note">
+    <span class="practice-label">Spreekscript slide 17</span>
+    <p>POC 3 is onze eigen implementatie en licht ik iets dieper toe.</p>
+    <p>We hebben vier Python/Flask services gebouwd. User Management heeft de private RSA-key en geeft JWT-tokens uit. De andere drie services (Gateway, Catalog, Validator) hebben enkel de public key en valideren lokaal.</p>
+    <p>Scenario 5 is de kerntest: we schakelen User Management uit nadat een token uitgegeven is. De Catalog en Validator geven nog steeds 200 terug op correcte requests. Dit bewijst ADR 005: geen single point of failure.</p>
+    <p>Scenario 6 toont een reële aanvalspoging: een gebruiker wijzigt zijn eigen JWT-payload om de rol 'admin' te claimen. Zonder de private key kan de signature niet herberekend worden. Alle services weigeren het token met 401.</p>
+    <p>Twee geleerde lessen die interessant zijn voor de verdediging: de opdrachttekst zegt -f maar docker stack deploy gebruikt -c. En Ubuntu resolvet localhost naar IPv6 terwijl Docker Swarm enkel op IPv4 publiceert.</p>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 18 — RISICO'S
+══════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <div class="header">
+    <div><div class="eyebrow">8 · Risico's &amp; mitigaties</div><h2>We benoemen bewust wat onzeker blijft</h2></div>
+  </div>
+  <div class="content">
+    <table class="matrix">
+      <tr>
+        <th>Risico</th>
+        <th>Impact</th>
+        <th>Mitigatie</th>
+        <th>ADR-link</th>
+      </tr>
+      <tr>
+        <td><strong>Container escape via misconfiguratie</strong></td>
+        <td>Aanvaller bereikt host of andere containers</td>
+        <td>cap_drop ALL, read_only, no-new-privileges. Config in versiebeheer. Geen privileged containers zonder nieuwe ADR.</td>
+        <td>ADR 004</td>
+      </tr>
+      <tr>
+        <td><strong>Microservices-complexiteit te hoog</strong></td>
+        <td>Team verliest overzicht, debugging moeilijk</td>
+        <td>5 ADR's leggen beslissingen vast. Elke POC bewijst één technisch aspect. OTEL + Zipkin als toekomstige observability-laag (les 8).</td>
+        <td>ADR 001</td>
+      </tr>
+      <tr>
+        <td><strong>Message Broker offline</strong></td>
+        <td>Asynchrone events gaan verloren</td>
+        <td>RabbitMQ durable queues: berichten blijven bewaard bij herstart. Named volume op manager node voor persistentie.</td>
+        <td>ADR 002</td>
+      </tr>
+      <tr>
+        <td><strong>Token-intrekking vóór expiry</strong></td>
+        <td>Gecompromitteerde token blijft 1 uur geldig</td>
+        <td>Korte expiry (1u). Refresh-mechanisme. In productie: token blocklist in shared cache. Bewuste keuze tegenover extra afhankelijkheid.</td>
+        <td>ADR 005</td>
+      </tr>
+      <tr>
+        <td><strong>Sandbox Resource Exhaustion</strong></td>
+        <td>Één gebruiker verbruikt alle CPU/RAM van de node</td>
+        <td>CPU- en geheugenlimieten per container via Docker resource constraints. Bewezen in POC 1 stress-test.</td>
+        <td>ADR 004</td>
+      </tr>
+    </table>
+  </div>
+  <div class="practice-note">
+    <span class="practice-label">Spreekscript slide 18</span>
+    <p>Een architectuur zonder expliciete risico-erkenning is niet geloofwaardig. We benoemen bewust de risico's en leggen uit hoe we ze beheersen.</p>
+    <p>Het grootste technische risico is container escape. Als een gebruiker via een kwetsbaarheid in Docker buiten zijn sandbox geraakt, kan hij de host of andere containers bereiken. We beperken dit door alle capabilities te verwijderen, het bestandssysteem read-only te maken en privilege escalation te blokkeren. Maar dit is geen 100% garantie — vandaar de governance-regel dat elke configuratiewijziging via code review gaat.</p>
+    <p>Het microservices-complexiteitsrisico is reëel voor een team van vier studenten. We beheersen het via de ADR-documentatie die beslissingen vastlegt, en via de POC's die de uitdagendste aspecten concreet bewijzen.</p>
+    <p>Token-intrekking is een bekende beperking van stateless JWT. We accepteren een expiry van 1 uur als compromis. In productie zou een token blocklist in Redis dit aanvullen, maar dat introduceert een nieuwe afhankelijkheid die de gedistribueerde validatie deels tenietdoet.</p>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 19 — GROEIPAD
+══════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <div class="header">
+    <div><div class="eyebrow">9 · Groeipad</div><h2>Hoe kan de architectuur later uitgebreid worden?</h2></div>
+  </div>
+  <div class="content grid three small">
+    <div class="card">
+      <h3>Betere sandbox-isolatie</h3>
+      <p>Bij hogere security-eisen: VM-isolatie via Firecracker (microVM). Containers kunnen vervangen worden zonder andere services te wijzigen.</p>
+    </div>
+    <div class="card">
+      <h3>Observability</h3>
+      <p>OpenTelemetry (OTEL) + Zipkin voor distributed tracing over services heen. Les 8 toont het patroon. Elke service instrumenteren via een gedeelde library.</p>
+    </div>
+    <div class="card">
+      <h3>Identity provider</h3>
+      <p>Keycloak als externe authorization server vervangt de zelfgebouwde JWT-service. OAuth2/OIDC-flow zoals gedemonstreerd in les 9.</p>
+    </div>
+    <div class="card">
+      <h3>Meer challenge-types</h3>
+      <p>Nieuwe challenge-categorieën toevoegen zonder core-wijzigingen. Extensibility karakteristiek is structureel ingebakken via de service-grenzen.</p>
+    </div>
+    <div class="card">
+      <h3>CTF-event schaalbaarheid</h3>
+      <p>Bij pieken (CTF-events) kunnen Sandbox Provisioner en Challenge Interface onafhankelijk opschalen. Elasticity is structureel mogelijk door de service-isolatie.</p>
+    </div>
+    <div class="card">
+      <h3>Monitoring &amp; alerting</h3>
+      <p>Queue-lengte bewaken, worker-health checken, failed container-events alerteren. Groeit organisch mee naarmate het platform in productie gaat.</p>
+    </div>
+  </div>
+  <div class="practice-note">
+    <span class="practice-label">Spreekscript slide 19</span>
+    <p>De microservices-architectuur laat uitbreidingen toe zonder de volledige architectuur te herdenken.</p>
+    <p>De meest directe uitbreiding is observability. Les 8 behandelt OpenTelemetry — in productie zou distributed tracing via OTEL + Zipkin het debuggen over services heen mogelijk maken. Voor de POC's hebben we eenvoudige logging.</p>
+    <p>Voor security: als de eisen strikter worden, kan de Sandbox Runtime vervangen worden door Firecracker microVM's. Die swap is mogelijk zonder andere services te wijzigen — dat is het voordeel van de service-isolatie uit ADR 004.</p>
+    <p>Voor authenticatie: Keycloak is de logische volgende stap als het platform groeit. De OAuth-les toont precies hoe dat werkt. De huidige JWT-aanpak is bewust eenvoudig gehouden voor versie 1.</p>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 20 — BESLUIT
+══════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <div class="header">
+    <div><div class="eyebrow">10 · Besluit</div><h2>Van karakteristiek naar architectuur naar bewijs</h2></div>
+  </div>
+  <div class="content">
+    <div class="card" style="margin-bottom:16px;">
+      <p class="quote">De top-3 karakteristieken — <em>security, fault tolerance, scalability</em> — vereisen dat de Sandbox Runtime volledig geïsoleerd, onafhankelijk schaalbaar en zelfrherstellend is. Geen enkele monolitische stijl kan dit structureel garanderen. Microservices is de architecturale consequentie, niet een vrije keuze.</p>
+    </div>
+    <div class="grid small">
+      <div>
+        <div class="decision">
+          <div class="adr">ADR 001</div>
+          <div><h3>Microservices</h3><p>Enige stijl die Sandbox Runtime volledig isoleert en onafhankelijk laat schalen. Tweede keuze: modulaire monoliet.</p></div>
+        </div>
+        <div class="decision">
+          <div class="adr">ADR 002</div>
+          <div><h3>Hybride communicatie</h3><p>REST voor tijdskritische calls, RabbitMQ queues voor events. Gebaseerd op Two Many Sneakers case (les 3).</p></div>
+        </div>
+        <div class="decision">
+          <div class="adr">ADR 003</div>
+          <div><h3>Data ownership</h3><p>Elke service beheert zijn eigen schema. Geen directe JOINs over servicegrenzen. Gebaseerd op StayHealthy case (les 7).</p></div>
+        </div>
+      </div>
+      <div>
+        <div class="decision">
+          <div class="adr">ADR 004</div>
+          <div><h3>Containerisolatie</h3><p>Docker met cap_drop ALL, read_only, resource limits. Bewezen in POC 1. VM-isolatie bij hogere eisen.</p></div>
+        </div>
+        <div class="decision">
+          <div class="adr">ADR 005</div>
+          <div><h3>Gedistribueerde JWT (RS256)</h3><p>Centrale uitgifte, lokale validatie. Geen SPOF bij runtime. Bewezen in POC 3 met User Management offline.</p></div>
+        </div>
+        <div class="decision" style="border-bottom:0;">
+          <div class="adr" style="color:var(--good);">POC's</div>
+          <div><h3>4 technische bewijzen</h3><p>Container isolation · Failure recovery · JWT validation · Async messaging. Elk opstartbaar via <code>docker stack deploy -c poc.yaml poc</code>.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="practice-note">
+    <span class="practice-label">Spreekscript slide 20</span>
+    <p>De architectuur van HackLab is niet opgebouwd vanuit technologiepreferenties maar vanuit de karakteristieken van het systeem.</p>
+    <p>Security, fault tolerance en scalability vereisen dat de Sandbox Runtime — de gevaarlijkste en zwaarst belaste component — volledig geïsoleerd en onafhankelijk kan opereren. Dat is de architecturale eis. Microservices is de stijl die dat structureel mogelijk maakt. Dat is de conclusie van ADR 001.</p>
+    <p>Elke bijkomende ADR bouwt op die keuze: data ownership is een noodzakelijke consequentie van microservices (ADR 003), het communicatiemodel maakt de asynchrone koppeling expliciet (ADR 002), de sandbox-configuratie vertaalt security naar technische eisen (ADR 004), en JWT RS256 lost authenticatie op zonder SPOF (ADR 005).</p>
+    <p>De vier POC's bewijzen de meest uitdagende beslissingen technisch. Elk is opstartbaar via docker stack deploy, heeft een README met teststappen, en beantwoordt één scherpe vraag.</p>
+    <p>Daarmee is de architectuur haalbaar voor een team van vier in zes maanden, maar tegelijk verantwoord en uitbreidbaar.</p>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 21 — VRAGEN
+══════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <div class="header">
+    <div>
+      <div class="eyebrow">Einde presentatie</div>
+      <h1>Bedankt</h1>
+      <p class="subtitle">Vragen?</p>
+    </div>
+  </div>
+  <div class="content">
+    <div class="grid three small">
+      <div class="card center">
+        <p style="font-size:28px;margin-bottom:6px;">7</p>
+        <p>Karakteristieken<br>top 3 aangeduid</p>
+      </div>
+      <div class="card center">
+        <p style="font-size:28px;margin-bottom:6px;">5</p>
+        <p>ADR's — alle 4 stijlen<br>afgewogen in ADR 001</p>
+      </div>
+      <div class="card center">
+        <p style="font-size:28px;margin-bottom:6px;">4</p>
+        <p>POC's — elk opstartbaar<br>via docker stack deploy</p>
+      </div>
+    </div>
+    <div class="note" style="margin-top:16px;font-size:16px;">
+      GitHub: <strong>poc/poc1-isolation</strong> · <strong>poc/poc2-failure-recovery</strong> · <strong>poc/poc3-distributed-jwt-validation</strong> · <strong>poc/poc4-Asynchrone-Voortgangsregistratie</strong>
+    </div>
+  </div>
+  <div class="practice-note">
+    <span class="practice-label">Spreekscript slide 21</span>
+    <p>Dat was de presentatie van HackLab. We zijn klaar voor vragen.</p>
+    <p>Mogelijke vragen die je kan verwachten:</p>
+    <ul>
+      <li>Waarom microservices en niet modulaire monoliet? → Top-3 karakteristieken vereisen onafhankelijke isolatie van Sandbox Runtime. Geen monolitische stijl garandeert dat structureel.</li>
+      <li>Waarom RS256 en niet HS256? → Asymmetrisch: enkel User Management kan tokens ondertekenen. Andere services kunnen valideren zonder het signing-geheim te kennen. Gecompromitteerde service kan geen tokens vervalsen.</li>
+      <li>Hoe weet je dat een container niet kan escapen? → Via de configuratie: cap_drop ALL, read_only, no-new-privileges, geïsoleerd netwerk. POC 1 test dit met een stress-test. Volledige garantie bestaat niet — vandaar governance en VM-isolatie als toekomstige upgrade.</li>
+      <li>Wat is de tweede keuze voor de stijl en waarom? → Modulaire monoliet. De domeinpartitionering van onze logische componenten sluit perfect aan. De overstap naar microservices is haalbaar vanuit een modulaire monoliet (spectrum-diagram les 7).</li>
+    </ul>
+  </div>
+</section>
+
+
+</main>
+
+<footer class="footer">
+  <div>Navigeer met <kbd>←</kbd> <kbd>→</kbd> of spatie &nbsp;·&nbsp; <kbd>Home</kbd>/<kbd>End</kbd> &nbsp;·&nbsp; <kbd>N</kbd> spreekscript</div>
+  <div class="progress"><div class="bar" id="bar"></div></div>
+  <div id="counter">1 / 21</div>
+</footer>
+
+<script>
+const slides = [...document.querySelectorAll('.slide')];
+const counter = document.getElementById('counter');
+const bar = document.getElementById('bar');
+let index = Number(location.hash.replace('#','')) || 0;
+index = Math.max(0, Math.min(index, slides.length - 1));
+
+function show(i) {
+  index = Math.max(0, Math.min(i, slides.length - 1));
+  slides.forEach((s, n) => s.classList.toggle('active', n === index));
+  counter.textContent = `${index + 1} / ${slides.length}`;
+  bar.style.width = `${((index + 1) / slides.length) * 100}%`;
+  history.replaceState(null, '', `#${index}`);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key.toLowerCase() === 'n') {
+    document.body.classList.toggle('hide-notes');
+    return;
+  }
+  if (['ArrowRight','PageDown',' '].includes(e.key)) { e.preventDefault(); show(index + 1); }
+  if (['ArrowLeft','PageUp','Backspace'].includes(e.key)) { e.preventDefault(); show(index - 1); }
+  if (e.key === 'Home') show(0);
+  if (e.key === 'End') show(slides.length - 1);
+});
+
+document.addEventListener('click', e => {
+  if (e.target.closest('a,button,kbd')) return;
+  show(index + 1);
+});
+
+show(index);
+</script>
+</body>
+</html>
