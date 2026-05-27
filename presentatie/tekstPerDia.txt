@@ -27,6 +27,42 @@ Slide 5 — Logische componenten
 De Sandbox Runtime valt op en dat is bewust. Dit is de enige component die effectief onbetrouwbare, door gebruikers geschreven code uitvoert. Ze staat los van de rest, heeft geen netwerktoegang tot het platform en mag als enige falen zonder andere componenten mee te trekken.
 Precies die vereiste — dat één component volledig geïsoleerd moet kunnen werken, falen en schalen — is de directe aanleiding voor de architecturale keuze die we op de volgende slides toelichten."
 
+Slide 6 - Stijlvergelijking
+"De opdracht vraagt uitdrukkelijk dat we alle vier de stijlen in overweging nemen. Dat doen we niet als formaliteit, maar als echte oefening: welke stijl scoort het best op onze top-3 karakteristieken 
+— security, fault tolerance en scalability? We beginnen links. De gelaagde architectuur valt snel af. Het is de eenvoudigste stijl: goedkoop, snel op te zetten, weinig overhead. 
+Maar de Sandbox Runtime — de component die onbetrouwbare exploits uitvoert — kan in een gelaagde architectuur niet onafhankelijk schalen. En wat nog belangrijker is: als die component crasht, 
+treft dat het hele systeem. Dat is onacceptabel wanneer gebruikers actief gevaarlijke code uitvoeren. De microkernel valt om dezelfde reden af. Het heeft een reëel voordeel voor ons systeem: extensibility. 
+Nieuwe challenge-types toevoegen als plugin is elegant. Maar het deployment blijft monolitisch. Een crash in een plugin kan de kern destabiliseren. Fault tolerance is structureel onvoldoende.
+De modulaire monoliet is onze tweede keuze, en dat is bewust. De domeinpartitionering die we in de logische componenten hebben uitgewerkt, sluit perfect aan op een modulaire monoliet. 
+Het is ook haalbaar voor een klein team. Maar het fundamentele probleem blijft: het is alles-of-niets deployment. De Sandbox Runtime kan niet apart schalen en kan niet apart falen zonder de rest mee te trekken.
+Dat brengt ons bij microservices. Dit is de enige stijl die structureel garandeert dat de Sandbox Runtime volledig geïsoleerd draait, onafhankelijk opschaalt bij pieken, en faalt zonder andere services te raken. 
+Die drie eigenschappen zijn precies wat onze top-3 vereist. De hogere complexiteit is geen vrije keuze — het is de noodzakelijke kost van de karakteristieken."
+
+Slide 7 — Microservices Trade-offs
+Microservices zijn duur, en de cursus is daar heel eerlijk over. We willen die kost expliciet benoemen, niet wegmoffelen.
+Links staat wat we bewust accepteren. Elke service moet zijn eigen data beheren — geen gedeelde tabellen, geen directe JOINs over servicegrenzen. 
+Communicatie verloopt over het netwerk, wat latency en gedistribueerde failures introduceert. Observability vereist extra tooling: je kan niet gewoon een logfile lezen als een request door acht services gaat. 
+En het team moet all-round zijn — iedereen moet het hele systeem kunnen begrijpen. Rechts staat hoe we die complexiteit beheersen. Data ownership lost ADR 003 op, dat bespreken we zo dadelijk. 
+Het communicatiemodel — wanneer synchroon, wanneer asynchroon — wordt expliciet vastgelegd in ADR 002. Voor observability voorzien we logging in elke POC; in productie is dat OpenTelemetry. 
+En ons team van vier is groot genoeg om de complexiteit te dragen, met elk lid verantwoordelijk voor één proof of concept. De onderste noot is belangrijk: als ons team kleiner zou zijn, 
+of het budget strakker, kiezen we voor de modulaire monoliet. De grenzen tussen de logische componenten zijn al vastgelegd. 
+De migratie naar microservices is vanuit een modulaire monoliet een bekende en haalbare weg — haalbaarder dan vanuit een gelaagde architectuur.
+
+Slide 8 — ADR 002 Communicatie
+
+ADR 002 gaat over hoe de services met elkaar praten. De kernvraag is: altijd synchroon, altijd asynchroon, of situationeel?
+We kiezen voor een hybride model, en dat is niet voor de hand liggend — het vereist een bewuste keuze per communicatielijn.
+Links staan de synchrone calls via REST. Dit zijn situaties waarbij de gebruiker wacht op een antwoord. Als een student het challenge-overzicht opvraagt, wacht die browser op die lijst. 
+Als een sandbox opgestart wordt, wil je weten of die gelukt is voor je de gebruiker doorverwijst. Als een flag ingediend wordt, wil de student direct weten of die correct is. 
+Die calls zijn tijdskritisch — synchroon is hier de juiste keuze. Rechts staan de asynchrone events via RabbitMQ. Dit zijn situaties waarbij de aanroeper niet hoeft te wachten op verwerking door een andere service. 
+Het duidelijkste voorbeeld staat in de flow onderaan: een student dient een flag in en krijgt direct een antwoord van de Submission Validator — dat is synchroon. 
+Maar de score opslaan in de Progress Tracker hoeft niet onmiddellijk. Dat kan via een queue. Als de Progress Tracker op dat moment tijdelijk offline is, 
+gaat het bericht niet verloren — het wacht in de queue tot de service terug beschikbaar is. Hetzelfde principe geldt voor de Content Manager die een nieuwe challenge publiceert: 
+de Catalog hoeft dat niet real-time te verwerken. En sandbox-events zoals een crash of een stop — andere services hoeven daar niet synchroon op te wachten, maar moeten wel verwittigd worden.
+De bron voor dit model is de Two Many Sneakers case uit les 3: de vergelijkingstabel tussen web services en queues maakt de trade-offs expliciet. 
+Web services geven sterke koppeling en directe feedback. Queues geven zwakkere koppeling, betere fault tolerance, maar vereisen queue-infrastructuur en brengen eventual consistency mee. 
+Die kost accepteren we bewust — en ADR 002 documenteert precies waar we die afweging maken.
+
 Slide 10 - Sandbox-Isolatie
 "Deze beslissing draait eigenlijk volledig rond security.
 Gebruikers voeren echte exploits en aanvalscode uit. Daardoor is de sandbox-runtime de gevaarlijkste component van het hele platform.
