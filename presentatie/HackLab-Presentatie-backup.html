@@ -163,7 +163,7 @@ w<!doctype html>
   </div>
   <div class="content grid big">
     <div class="card">
-      <h3>Functioneel probleem</h3>
+      <h3>Wat het systeem moet kunnen</h3>
       <ul>
         <li>Gebruikers moeten échte exploits kunnen uitvoeren.</li>
         <li>Elke gebruiker heeft een eigen geïsoleerde omgeving nodig.</li>
@@ -194,7 +194,7 @@ w<!doctype html>
 ══════════════════════════════════════════════════════════ -->
 <section class="slide">
   <div class="header">
-    <div><div class="eyebrow">2 · Karakteristieken</div><h2>7 karakteristieken — top 3 bepaalt de stijlkeuze</h2></div>
+    <div><div class="eyebrow">2 · Karakteristieken</div><h2>7 kwaliteiten die het systeem moet bezitten</h2></div>
   </div>
   <div class="content">
     <table class="matrix">
@@ -569,63 +569,58 @@ w<!doctype html>
 ══════════════════════════════════════════════════════════ -->
 <section class="slide">
   <div class="header">
-    <div><div class="eyebrow">5 · ADR 004 — Sandbox-isolatie</div><h2>Onbetrouwbare code moet veilig geïsoleerd draaien</h2></div>
+    <div><div class="eyebrow">5 · ADR 004 — Sandbox-isolatie</div><h2>Hoe isoleren we omgevingen waar onbetrouwbare code in draait?</h2></div>
   </div>
-
   <div class="content grid">
     <div>
       <div class="grid three small" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px;">
-        <div class="card no center">
+        <div class="card no" style="text-align:center;">
           <div class="label">Procesisolatie</div>
-          <p>Snel, maar te zwak voor echte exploits.</p>
+          <p>OS-niveau isolatie. Snelst, maar zwakst. Container escape is reëel risico.</p>
         </div>
-        <div class="card yes center" style="border-color:rgba(34,197,94,.5);">
+        <div class="card yes" style="text-align:center;border-color:rgba(34,197,94,.5);">
           <div class="label">Containerisolatie ✓</div>
-          <p>Beste balans tussen security, snelheid en haalbaarheid.</p>
+          <p>Docker met strikte config. Snel opstarten (seconden). Beheersbaar voor ons team.</p>
         </div>
-        <div class="card warn-card center">
+        <div class="card" style="text-align:center;">
           <div class="label">VM-isolatie</div>
-          <p>Sterker, maar te zwaar voor versie 1.</p>
+          <p>Sterkste garanties (Firecracker). Te complex voor huidige team en budget.</p>
         </div>
       </div>
-
       <div class="card yes">
-        <div class="label">Gekozen aanpak: Docker containers</div>
+        <div class="label">Gekozen configuratie: Docker containers</div>
         <ul>
-          <li><code>cap_drop: ALL</code> — minimale rechten</li>
-          <li><code>read_only: true</code> — read-only filesystem</li>
-          <li><code>no-new-privileges: true</code> — geen privilege escalation</li>
-          <li>CPU- en geheugenlimieten per sandbox</li>
-          <li>Geïsoleerd netwerk zonder toegang tot platform-services</li>
-          <li>Container wordt per sessie aangemaakt en nadien verwijderd</li>
+          <li><code>cap_drop: ALL</code> — alle Linux capabilities verwijderd</li>
+          <li><code>read_only: true</code> — bestandssysteem alleen-lezen</li>
+          <li><code>no-new-privileges: true</code> — privilege escalation geblokkeerd</li>
+          <li>CPU en geheugen gelimiteerd per container</li>
+          <li>Geïsoleerd overlay netwerk — geen egress naar platform</li>
+          <li>Per sessie aangemaakt en na gebruik vernietigd</li>
         </ul>
       </div>
     </div>
-
     <div>
       <div class="card no" style="margin-bottom:14px;">
         <div class="label">Bewust niet gekozen: VM-isolatie</div>
-        <p>VM’s bieden sterkere garanties, maar verhogen de opstarttijd en operationele complexiteit. Voor een leerplatform is snelle sandbox-start belangrijk.</p>
+        <p>VM's bieden sterkere garanties maar starten in minuten in plaats van seconden. Voor een leersessie is dat een onaanvaardbare gebruikerservaring. Bij een groter budget of strengere security-eisen zou Firecracker overwogen worden.</p>
       </div>
-
       <div class="card warn-card">
         <div class="label">Geaccepteerd risico</div>
         <ul>
-          <li>Containerisolatie is niet absoluut.</li>
-          <li>Misconfiguratie kan leiden tot container escapes.</li>
-          <li>Host-hardening blijft noodzakelijk in productie.</li>
+          <li>Container escapes zijn reëel als configuratie niet correct is.</li>
+          <li>Host-OS moet gehard worden (buiten scope POC).</li>
+          <li>Security-config vereist expliciete review bij elke wijziging.</li>
         </ul>
-        <p style="margin-top:8px;font-size:15px;">Governance: geen privileged containers zonder nieuwe ADR.</p>
+        <p style="margin-top:8px;font-size:15px;">Governance: geen privileged containers zonder nieuwe ADR. Config in versiebeheer.</p>
       </div>
     </div>
   </div>
-
   <div class="practice-note">
     <span class="practice-label">Spreekscript slide 10</span>
-    <p>ADR 004 vertaalt onze belangrijkste karakteristiek, security, naar een concrete architecturale keuze.</p>
-    <p>Omdat gebruikers echte exploits uitvoeren, is de sandbox de gevaarlijkste component. Procesisolatie is daarom te zwak. VM-isolatie is veiliger, maar te zwaar en trager voor versie 1.</p>
-    <p>Daarom kiezen we voor Docker containers met een strikte configuratie: minimale rechten, read-only filesystem, geen privilege escalation, resource limits en een geïsoleerd netwerk.</p>
-    <p>We erkennen wel dat containerisolatie geen perfecte garantie is. Daarom is governance belangrijk: geen privileged containers en elke wijziging aan de sandbox-configuratie moet via review.</p>
+    <p>ADR 004 is de architecturale vertaling van de top-1 karakteristiek: security. Gebruikers voeren exploits uit — dat betekent dat de sandbox de gevaarlijkste component van het systeem is.</p>
+    <p>We wegen drie opties af: procesisolatie is te zwak voor onbetrouwbare code. VM-isolatie is het sterkst maar start te traag op voor een leersessie. Containerisolatie met strikte configuratie biedt een aanvaardbaar evenwicht.</p>
+    <p>De concrete configuratie: cap_drop ALL verwijdert alle Linux capabilities, read_only maakt het bestandssysteem niet beschrijfbaar buiten /tmp, no-new-privileges blokkeert escalatie, en het netwerk is volledig geïsoleerd van het platform.</p>
+    <p>Het geaccepteerde risico: container escapes zijn mogelijk als de configuratie fout is. Dat is precies waarom governance vereist dat elke configuratiewijziging via code review gaat en privileged containers een nieuwe ADR vereisen.</p>
   </div>
 </section>
 
@@ -640,7 +635,7 @@ w<!doctype html>
   <div class="content">
     <div class="grid" style="margin-bottom:14px;">
       <div class="card yes">
-        <div class="label">Gekozen: hybride aanpak (RS256)</div>
+        <div class="label">Gekozen: hybride aanpak</div>
         <ul>
           <li><strong>Centrale uitgifte:</strong> User Management geeft JWT's uit ondertekend met private key.</li>
           <li><strong>Gedistribueerde validatie:</strong> alle services valideren lokaal met public key — geen call naar User Management per request.</li>
@@ -649,7 +644,7 @@ w<!doctype html>
         <div class="note">Bron: OAuth-les (les 9) — authorization server / resource server / RS256 asymmetrisch.</div>
       </div>
       <div class="card no">
-        <div class="label">Niet gekozen: centrale validatie per request</div>
+        <div class="label">Waarom niet: centrale validatie per request</div>
         <p>Als elke service de authenticatieservice raadpleegt bij elk request, wordt User Management een <strong>single point of failure</strong> en een performance-bottleneck. Dit druist in tegen availability en scalability.</p>
         <p style="margin-top:8px;">Bij een groter budget: Keycloak als volwaardige identity provider (demo in les 9). Voor ons team: zelfgebouwde JWT-service is haalbaar en onderhoudbaar.</p>
       </div>
@@ -841,67 +836,63 @@ w<!doctype html>
 ══════════════════════════════════════════════════════════ -->
 <section class="slide">
   <div class="header">
-    <div><div class="eyebrow">7 · Proofs of Concept</div><h2>4 POC’s — bewijs voor de risicovolste architectuurkeuzes</h2></div>
+    <div><div class="eyebrow">7 · Proofs of Concept</div><h2>4 POC's — elk één technische vraag, elk een ADR-bewijs</h2></div>
   </div>
-
   <div class="content grid four small" style="grid-template-columns:repeat(4,minmax(0,1fr));">
     <div class="card" style="border-top:4px solid var(--bad);">
       <h3 style="color:var(--bad);">POC 1</h3>
       <p style="font-weight:800;color:var(--text);">Container Isolation</p>
-      <p>Bewijst: <strong>ADR 004</strong></p>
-      <p>Kan onbetrouwbare code veilig in een container draaien?</p>
+      <p>Valideert: <strong>ADR 004</strong></p>
+      <p>Kan een Docker container veilig geïsoleerd draaien voor onbetrouwbare code?</p>
       <ul>
-        <li>Geen privileged mode</li>
-        <li><code>cap_drop: ALL</code></li>
-        <li>Read-only filesystem</li>
-        <li>Resource limits getest</li>
+        <li>cap_drop ALL — geen capabilities</li>
+        <li>read_only bestandssysteem</li>
+        <li>Resource limits actief</li>
+        <li>Stress-test bewijst containment</li>
       </ul>
     </div>
-
     <div class="card" style="border-top:4px solid var(--warn);">
       <h3 style="color:var(--warn);">POC 2</h3>
       <p style="font-weight:800;color:var(--text);">Sandbox Failure Recovery</p>
-      <p>Bewijst: <strong>ADR 001 + ADR 004</strong></p>
-      <p>Blijft het platform werken als één sandbox crasht?</p>
+      <p>Valideert: <strong>ADR 001 + ADR 004</strong></p>
+      <p>Als één sandbox crasht, blijven andere omgevingen operationeel?</p>
       <ul>
         <li>Docker Swarm reconciliation</li>
-        <li>Crash blijft lokaal</li>
-        <li>Automatisch herstel</li>
+        <li>Gewenste vs. geobserveerde toestand</li>
+        <li>Automatisch herstel zonder impact</li>
       </ul>
     </div>
-
     <div class="card" style="border-top:4px solid var(--accent);">
       <h3 style="color:var(--accent);">POC 3</h3>
       <p style="font-weight:800;color:var(--text);">Distributed JWT Validation</p>
-      <p>Bewijst: <strong>ADR 005</strong></p>
-      <p>Kunnen services tokens valideren zonder runtime-afhankelijkheid?</p>
+      <p>Valideert: <strong>ADR 005</strong></p>
+      <p>Valideren services JWT's zelfstandig ook als User Management offline is?</p>
       <ul>
-        <li>RS256 private/public key</li>
-        <li>Lokale tokenvalidatie</li>
-        <li>User Management offline-test</li>
+        <li>RS256, private/public key split</li>
+        <li>Docker Swarm secrets</li>
+        <li>7 geautomatiseerde testscenario's</li>
       </ul>
     </div>
-
     <div class="card" style="border-top:4px solid var(--good);">
       <h3 style="color:var(--good);">POC 4</h3>
       <p style="font-weight:800;color:var(--text);">Async Voortgangsregistratie</p>
-      <p>Bewijst: <strong>ADR 002 + ADR 003</strong></p>
-      <p>Blijven events bewaard bij tijdelijke uitval?</p>
+      <p>Valideert: <strong>ADR 002 + ADR 003</strong></p>
+      <p>Kan indiening asynchroon verwerkt worden ook bij tijdelijke uitval?</p>
       <ul>
         <li>RabbitMQ durable queues</li>
-        <li>Progress Tracker offline</li>
-        <li>Berichten later verwerkt</li>
+        <li>Progress Tracker offline → berichten bewaard</li>
+        <li>Bij herstart alsnog verwerkt</li>
       </ul>
     </div>
   </div>
-
-  <div class="note" style="margin-top:10px;">Elke POC beantwoordt één technische vraag en is gekoppeld aan minstens één ADR.</div>
-
+  <div class="note" style="margin-top:10px;">Elke POC: <code>docker stack deploy -c poc.yaml poc</code> · aparte directory · README.md met teststappen.</div>
   <div class="practice-note">
     <span class="practice-label">Spreekscript slide 16</span>
-    <p>De POC’s zijn niet zomaar demo’s. Ze valideren de meest risicovolle architecturale beslissingen.</p>
-    <p>POC 1 bewijst de sandbox-isolatie. POC 2 bewijst dat een crash beperkt blijft en automatisch hersteld wordt. POC 3 bewijst dat JWT-validatie gedistribueerd werkt. POC 4 bewijst dat asynchrone voortgangsregistratie blijft werken bij tijdelijke uitval.</p>
-    <p>Zo tonen we dat onze ADR’s niet alleen theoretisch verdedigbaar zijn, maar ook technisch haalbaar.</p>
+    <p>De opdracht vraagt 4 POC's (één per groepslid) voor de meest uitdagende aspecten. Elk POC beantwoordt één scherpe technische vraag en is direct gekoppeld aan een ADR.</p>
+    <p>POC 1 bewijst ADR 004: de Docker-configuratie is streng genoeg om sandbox-omgevingen veilig te isoleren. Een stress-test toont dat resource exhaustion in één container de host niet raakt.</p>
+    <p>POC 2 bewijst ADR 001 en 004: Docker Swarm's reconciliation-mechanisme (verschil gewenste vs. geobserveerde toestand, les 2) herstelt een gecrashe container automatisch. Andere containers blijven onaangetast.</p>
+    <p>POC 3 bewijst ADR 005: RS256 JWT-tokens worden lokaal gevalideerd. De kerntest: User Management uitschakelen na login — andere services blijven werken.</p>
+    <p>POC 4 bewijst ADR 002 en 003: RabbitMQ durable queues bufferen berichten als de Progress Tracker tijdelijk offline is. Bij herstart worden de berichten alsnog verwerkt.</p>
   </div>
 </section>
 
@@ -928,14 +919,7 @@ w<!doctype html>
           <div class="step" style="min-height:40px;font-size:13px;width:100%;text-align:left;padding:6px 12px;">Submission Validator — public key — zelfstandige validatie</div>
         </div>
       </div>
-      <div class="card warn-card">
-        <div class="label">Geleerde lessen</div>
-        <ul style="font-size:15px;">
-          <li><code>docker stack deploy</code> gebruikt <strong>-c</strong>, niet -f (fout in opdrachttekst)</li>
-          <li>Ubuntu resolvet <code>localhost</code> naar IPv6 (::1) — Swarm publiceert enkel IPv4 → gebruik <code>127.0.0.1</code></li>
-          <li>Credentials in code → Docker Swarm secrets (zelfde patroon als RSA-keys)</li>
-        </ul>
-      </div>
+      
     </div>
     <div class="card">
       <h3>7 geautomatiseerde testscenario's</h3>
@@ -966,60 +950,54 @@ w<!doctype html>
 ══════════════════════════════════════════════════════════ -->
 <section class="slide">
   <div class="header">
-    <div><div class="eyebrow">8 · Risico's &amp; mitigaties</div><h2>Onzekerheden expliciet maken is deel van de architectuur</h2></div>
+    <div><div class="eyebrow">8 · Risico's &amp; mitigaties</div><h2>We benoemen bewust wat onzeker blijft</h2></div>
   </div>
-
   <div class="content">
     <table class="matrix">
       <tr>
         <th>Risico</th>
         <th>Impact</th>
         <th>Mitigatie</th>
-        <th>ADR</th>
+        <th>ADR-link</th>
       </tr>
       <tr>
-        <td><strong>Container escape</strong></td>
-        <td>Sandbox geraakt buiten isolatie</td>
-        <td>Minimale rechten, read-only filesystem, geen privileged containers, review bij config-wijzigingen.</td>
+        <td><strong>Container escape via misconfiguratie</strong></td>
+        <td>Aanvaller bereikt host of andere containers</td>
+        <td>cap_drop ALL, read_only, no-new-privileges. Config in versiebeheer. Geen privileged containers zonder nieuwe ADR.</td>
         <td>ADR 004</td>
       </tr>
       <tr>
-        <td><strong>Microservices-complexiteit</strong></td>
-        <td>Debugging en beheer worden moeilijker</td>
-        <td>ADR’s leggen keuzes vast. POC’s bewijzen de moeilijkste onderdelen. Later observability via OTEL.</td>
+        <td><strong>Microservices-complexiteit te hoog</strong></td>
+        <td>Team verliest overzicht, debugging moeilijk</td>
+        <td>5 ADR's leggen beslissingen vast. Elke POC bewijst één technisch aspect. OTEL + Zipkin als toekomstige observability-laag (les 8).</td>
         <td>ADR 001</td>
       </tr>
       <tr>
-        <td><strong>Message broker offline</strong></td>
-        <td>Asynchrone verwerking vertraagt</td>
-        <td>Durable queues en persistente opslag. Berichten worden later verwerkt.</td>
+        <td><strong>Message Broker offline</strong></td>
+        <td>Asynchrone events gaan verloren</td>
+        <td>RabbitMQ durable queues: berichten blijven bewaard bij herstart. Named volume op manager node voor persistentie.</td>
         <td>ADR 002</td>
       </tr>
       <tr>
-        <td><strong>JWT intrekken vóór expiry</strong></td>
-        <td>Token blijft tijdelijk bruikbaar</td>
-        <td>Korte expiry. In productie eventueel blocklist/cache, met bewuste trade-off.</td>
+        <td><strong>Token-intrekking vóór expiry</strong></td>
+        <td>Gecompromitteerde token blijft 1 uur geldig</td>
+        <td>Korte expiry (1u). Refresh-mechanisme. In productie: token blocklist in shared cache. Bewuste keuze tegenover extra afhankelijkheid.</td>
         <td>ADR 005</td>
       </tr>
       <tr>
-        <td><strong>Resource exhaustion</strong></td>
-        <td>Gebruiker verbruikt te veel CPU/RAM</td>
-        <td>Resource limits per container. Bewezen in POC 1.</td>
+        <td><strong>Sandbox Resource Exhaustion</strong></td>
+        <td>Één gebruiker verbruikt alle CPU/RAM van de node</td>
+        <td>CPU- en geheugenlimieten per container via Docker resource constraints. Bewezen in POC 1 stress-test.</td>
         <td>ADR 004</td>
       </tr>
     </table>
-
-    <div class="note" style="margin-top:12px;">
-      Architectuur draait niet om perfecte zekerheid, maar om bewuste trade-offs en gecontroleerde risico’s.
-    </div>
   </div>
-
   <div class="practice-note">
     <span class="practice-label">Spreekscript slide 18</span>
-    <p>Een goede architectuur doet niet alsof er geen risico’s zijn. We benoemen bewust wat onzeker blijft.</p>
-    <p>Het grootste risico blijft container escape. We beperken dat met strikte Docker-configuratie, maar volledige garantie bestaat niet.</p>
-    <p>Ook microservices-complexiteit is een risico voor een klein team. Daarom documenteren we beslissingen via ADR’s en bewijzen we de moeilijkste onderdelen met POC’s.</p>
-    <p>Bij JWT accepteren we bewust dat token-intrekking vóór expiry moeilijker is. Dat is een gekende trade-off van stateless tokens.</p>
+    <p>Een architectuur zonder expliciete risico-erkenning is niet geloofwaardig. We benoemen bewust de risico's en leggen uit hoe we ze beheersen.</p>
+    <p>Het grootste technische risico is container escape. Als een gebruiker via een kwetsbaarheid in Docker buiten zijn sandbox geraakt, kan hij de host of andere containers bereiken. We beperken dit door alle capabilities te verwijderen, het bestandssysteem read-only te maken en privilege escalation te blokkeren. Maar dit is geen 100% garantie — vandaar de governance-regel dat elke configuratiewijziging via code review gaat.</p>
+    <p>Het microservices-complexiteitsrisico is reëel voor een team van vier studenten. We beheersen het via de ADR-documentatie die beslissingen vastlegt, en via de POC's die de uitdagendste aspecten concreet bewijzen.</p>
+    <p>Token-intrekking is een bekende beperking van stateless JWT. We accepteren een expiry van 1 uur als compromis. In productie zou een token blocklist in Redis dit aanvullen, maar dat introduceert een nieuwe afhankelijkheid die de gedistribueerde validatie deels tenietdoet.</p>
   </div>
 </section>
 
@@ -1029,47 +1007,40 @@ w<!doctype html>
 ══════════════════════════════════════════════════════════ -->
 <section class="slide">
   <div class="header">
-    <div><div class="eyebrow">9 · Groeipad</div><h2>Hoe deze architectuur later kan uitgroeien</h2></div>
+    <div><div class="eyebrow">9 · Groeipad</div><h2>Hoe kan de architectuur later uitgebreid worden?</h2></div>
   </div>
-
   <div class="content grid three small">
     <div class="card">
-      <h3>Sterkere sandbox-isolatie</h3>
-      <p>Bij strengere security-eisen kan Docker vervangen worden door microVM’s zoals Firecracker.</p>
+      <h3>Betere sandbox-isolatie</h3>
+      <p>Bij hogere security-eisen: VM-isolatie via Firecracker (microVM). Containers kunnen vervangen worden zonder andere services te wijzigen.</p>
     </div>
-
     <div class="card">
       <h3>Observability</h3>
-      <p>OpenTelemetry, tracing, centrale logging en monitoring maken debugging over services heen beter.</p>
+      <p>OpenTelemetry (OTEL) + Zipkin voor distributed tracing over services heen. Les 8 toont het patroon. Elke service instrumenteren via een gedeelde library.</p>
     </div>
-
     <div class="card">
-      <h3>Externe identity provider</h3>
-      <p>Keycloak kan later de zelfgebouwde JWT-service vervangen voor OAuth2/OIDC.</p>
+      <h3>Identity provider</h3>
+      <p>Keycloak als externe authorization server vervangt de zelfgebouwde JWT-service. OAuth2/OIDC-flow zoals gedemonstreerd in les 9.</p>
     </div>
-
     <div class="card">
       <h3>Meer challenge-types</h3>
-      <p>Nieuwe categorieën kunnen toegevoegd worden zonder de kernarchitectuur te herschrijven.</p>
+      <p>Nieuwe challenge-categorieën toevoegen zonder core-wijzigingen. Extensibility karakteristiek is structureel ingebakken via de service-grenzen.</p>
     </div>
-
     <div class="card">
       <h3>CTF-event schaalbaarheid</h3>
-      <p>Sandbox Provisioner en sandbox-laag kunnen apart opschalen bij piekmomenten.</p>
+      <p>Bij pieken (CTF-events) kunnen Sandbox Provisioner en Challenge Interface onafhankelijk opschalen. Elasticity is structureel mogelijk door de service-isolatie.</p>
     </div>
-
     <div class="card">
-      <h3>Productie-hardening</h3>
-      <p>Alerting, intrusion detection, backupstrategie en host-hardening worden toegevoegd bij productiegebruik.</p>
+      <h3>Monitoring &amp; alerting</h3>
+      <p>Queue-lengte bewaken, worker-health checken, failed container-events alerteren. Groeit organisch mee naarmate het platform in productie gaat.</p>
     </div>
   </div>
-
   <div class="practice-note">
     <span class="practice-label">Spreekscript slide 19</span>
-    <p>De architectuur is zo gekozen dat HackLab later kan groeien zonder volledig herschreven te worden.</p>
-    <p>De belangrijkste toekomstige verbetering is sterkere sandbox-isolatie. Als security-eisen hoger worden, kunnen containers vervangen worden door microVM’s zoals Firecracker.</p>
-    <p>Daarnaast is observability een logische volgende stap, omdat microservices moeilijker te debuggen zijn zonder tracing en centrale logging.</p>
-    <p>Ook authenticatie kan later professioneler via Keycloak. De huidige JWT-aanpak is bewust eenvoudig gehouden voor versie 1.</p>
+    <p>De microservices-architectuur laat uitbreidingen toe zonder de volledige architectuur te herdenken.</p>
+    <p>De meest directe uitbreiding is observability. Les 8 behandelt OpenTelemetry — in productie zou distributed tracing via OTEL + Zipkin het debuggen over services heen mogelijk maken. Voor de POC's hebben we eenvoudige logging.</p>
+    <p>Voor security: als de eisen strikter worden, kan de Sandbox Runtime vervangen worden door Firecracker microVM's. Die swap is mogelijk zonder andere services te wijzigen — dat is het voordeel van de service-isolatie uit ADR 004.</p>
+    <p>Voor authenticatie: Keycloak is de logische volgende stap als het platform groeit. De OAuth-les toont precies hoe dat werkt. De huidige JWT-aanpak is bewust eenvoudig gehouden voor versie 1.</p>
   </div>
 </section>
 
@@ -1081,55 +1052,48 @@ w<!doctype html>
   <div class="header">
     <div><div class="eyebrow">10 · Besluit</div><h2>Van karakteristiek naar architectuur naar bewijs</h2></div>
   </div>
-
   <div class="content">
     <div class="card" style="margin-bottom:16px;">
-      <p class="quote">De top-3 karakteristieken — <em>security, fault tolerance en scalability</em> — vereisen een geïsoleerde, onafhankelijk schaalbare en zelfherstellende sandbox-laag. Daarom is microservices hier geen modekeuze, maar een architecturale consequentie.</p>
+      <p class="quote">De top-3 karakteristieken — <em>security, fault tolerance, scalability</em> — vereisen dat de Sandbox Runtime volledig geïsoleerd, onafhankelijk schaalbaar en zelfrherstellend is. Geen enkele monolitische stijl kan dit structureel garanderen. Microservices is de architecturale consequentie, niet een vrije keuze.</p>
     </div>
-
     <div class="grid small">
       <div>
         <div class="decision">
           <div class="adr">ADR 001</div>
-          <div><h3>Microservices</h3><p>Gekozen omdat de Sandbox Runtime onafhankelijk moet kunnen draaien, falen en schalen.</p></div>
+          <div><h3>Microservices</h3><p>Enige stijl die Sandbox Runtime volledig isoleert en onafhankelijk laat schalen. Tweede keuze: modulaire monoliet.</p></div>
         </div>
-
         <div class="decision">
           <div class="adr">ADR 002</div>
-          <div><h3>Hybride communicatie</h3><p>REST voor directe interacties, RabbitMQ voor events en fouttolerante verwerking.</p></div>
+          <div><h3>Hybride communicatie</h3><p>REST voor tijdskritische calls, RabbitMQ queues voor events. Gebaseerd op Two Many Sneakers case (les 3).</p></div>
         </div>
-
         <div class="decision">
           <div class="adr">ADR 003</div>
-          <div><h3>Data ownership</h3><p>Elke service beheert zijn eigen data om sterke koppeling te vermijden.</p></div>
+          <div><h3>Data ownership</h3><p>Elke service beheert zijn eigen schema. Geen directe JOINs over servicegrenzen. Gebaseerd op StayHealthy case (les 7).</p></div>
         </div>
       </div>
-
       <div>
         <div class="decision">
           <div class="adr">ADR 004</div>
-          <div><h3>Containerisolatie</h3><p>Docker met strikte security-configuratie als haalbaar compromis voor versie 1.</p></div>
+          <div><h3>Containerisolatie</h3><p>Docker met cap_drop ALL, read_only, resource limits. Bewezen in POC 1. VM-isolatie bij hogere eisen.</p></div>
         </div>
-
         <div class="decision">
           <div class="adr">ADR 005</div>
-          <div><h3>Gedistribueerde JWT-validatie</h3><p>Centrale tokenuitgifte, lokale validatie per service, geen runtime-SPOF.</p></div>
+          <div><h3>Gedistribueerde JWT (RS256)</h3><p>Centrale uitgifte, lokale validatie. Geen SPOF bij runtime. Bewezen in POC 3 met User Management offline.</p></div>
         </div>
-
         <div class="decision" style="border-bottom:0;">
           <div class="adr" style="color:var(--good);">POC's</div>
-          <div><h3>Technische validatie</h3><p>De vier POC’s bewijzen de belangrijkste risico’s: isolatie, herstel, authenticatie en async verwerking.</p></div>
+          <div><h3>4 technische bewijzen</h3><p>Container isolation · Failure recovery · JWT validation · Async messaging. Elk opstartbaar via <code>docker stack deploy -c poc.yaml poc</code>.</p></div>
         </div>
       </div>
     </div>
   </div>
-
   <div class="practice-note">
     <span class="practice-label">Spreekscript slide 20</span>
-    <p>De kern van onze verdediging is dat de architectuur rechtstreeks voortvloeit uit de karakteristieken.</p>
-    <p>Omdat gebruikers echte exploits uitvoeren, zijn security, fault tolerance en scalability bepalend. Daardoor moet vooral de sandbox-laag geïsoleerd, schaalbaar en herstelbaar zijn.</p>
-    <p>Microservices is dus niet gekozen omdat het populair is, maar omdat geen monolitische stijl die eisen structureel kan garanderen.</p>
-    <p>De ADR’s maken de keuzes traceerbaar, en de POC’s tonen dat de risicovolste onderdelen technisch haalbaar zijn.</p>
+    <p>De architectuur van HackLab is niet opgebouwd vanuit technologiepreferenties maar vanuit de karakteristieken van het systeem.</p>
+    <p>Security, fault tolerance en scalability vereisen dat de Sandbox Runtime — de gevaarlijkste en zwaarst belaste component — volledig geïsoleerd en onafhankelijk kan opereren. Dat is de architecturale eis. Microservices is de stijl die dat structureel mogelijk maakt. Dat is de conclusie van ADR 001.</p>
+    <p>Elke bijkomende ADR bouwt op die keuze: data ownership is een noodzakelijke consequentie van microservices (ADR 003), het communicatiemodel maakt de asynchrone koppeling expliciet (ADR 002), de sandbox-configuratie vertaalt security naar technische eisen (ADR 004), en JWT RS256 lost authenticatie op zonder SPOF (ADR 005).</p>
+    <p>De vier POC's bewijzen de meest uitdagende beslissingen technisch. Elk is opstartbaar via docker stack deploy, heeft een README met teststappen, en beantwoordt één scherpe vraag.</p>
+    <p>Daarmee is de architectuur haalbaar voor een team van vier in zes maanden, maar tegelijk verantwoord en uitbreidbaar.</p>
   </div>
 </section>
 

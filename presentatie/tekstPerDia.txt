@@ -27,6 +27,17 @@ Slide 5 — Logische componenten
 De Sandbox Runtime valt op en dat is bewust. Dit is de enige component die effectief onbetrouwbare, door gebruikers geschreven code uitvoert. Ze staat los van de rest, heeft geen netwerktoegang tot het platform en mag als enige falen zonder andere componenten mee te trekken.
 Precies die vereiste — dat één component volledig geïsoleerd moet kunnen werken, falen en schalen — is de directe aanleiding voor de architecturale keuze die we op de volgende slides toelichten."
 
+Slide 10 - Sandbox-Isolatie
+"Deze beslissing draait eigenlijk volledig rond security.
+Gebruikers voeren echte exploits en aanvalscode uit. Daardoor is de sandbox-runtime de gevaarlijkste component van het hele platform.
+We hebben drie mogelijke manieren bekeken om die omgevingen te isoleren.
+Procesisolatie viel vrij snel af omdat dat te weinig bescherming biedt tegen onbetrouwbare code.
+Volledige VM-isolatie biedt wel de sterkste garanties, maar dat brengt veel meer overhead en tragere opstarttijden mee. Voor een leerplatform is dat niet praktisch.
+Daarom hebben we gekozen voor Docker-containerisolatie. Dat gaf voor ons de beste balans tussen security, performantie en haalbaarheid binnen een klein team.
+Elke gebruiker krijgt een tijdelijke container met zo weinig mogelijk rechten:
+geen privileged mode, een read-only filesystem, beperkte resources en een volledig geïsoleerd netwerk.
+We beseffen wel dat containerisolatie geen perfecte garantie biedt. Daarom behandelen we configuratiewijzigingen ook als een securitygevoelige beslissing die expliciet gereviewd moet worden."
+
 Slide 11 — Authenticatie en autorisatie
 "Het platform heeft drie soorten gebruikers: studenten, instructors en beheerders. Elke service moet weten wie een request doet en wat die persoon mag uitvoeren. In een gedistribueerd systeem is dat geen triviale vraag.
 We hadden verschillende opties. De meest voor de hand liggende is dat elke service bij elk request de centrale authenticatieservice raadpleegt. Eenvoudig, maar het betekent dat als die centrale service uitvalt, het volledige platform stilvalt. Dat is onverenigbaar met onze beschikbaarheidseisen.
@@ -35,6 +46,15 @@ Er bestaat ook tooling die dit volledig afhandelt, zoals Keycloak — een volwaa
 Onze keuze was een eigen authenticatieservice op basis van asymmetrische cryptografie. Die service geeft tokens uit, ondertekend met een private sleutel die enkel die service kent. Alle andere services valideren die tokens lokaal met de bijhorende publieke sleutel, zonder de authenticatieservice te contacteren bij elke request.
 Het resultaat: als de authenticatieservice uitvalt nadat een gebruiker ingelogd is, blijven alle andere services gewoon werken. Geen centrale afhankelijkheid bij elke request. En geen enkele andere service kan valse tokens aanmaken, want die heeft de private sleutel niet.
 Hoe we dit concreet hebben opgebouwd en getest, tonen we live."
+
+Slide 16 - POC's
+"De vier POC’s dienen eigenlijk om onze belangrijkste architecturale beslissingen technisch te bewijzen.
+Elke POC vertrekt vanuit één concrete vraag.
+POC 1 onderzoekt of Docker-containers veilig genoeg geïsoleerd kunnen draaien voor onbetrouwbare code.
+POC 2 kijkt naar fault tolerance: wat gebeurt er als één sandbox crasht? Docker Swarm moet die automatisch herstellen zonder impact op andere omgevingen.
+POC 3 valideert onze authenticatie-aanpak. We testen of services JWT-tokens lokaal kunnen valideren zonder afhankelijk te zijn van de authenticatieservice tijdens runtime.
+En POC 4 focust op asynchrone communicatie via RabbitMQ. Daar testen we of berichten behouden blijven wanneer een service tijdelijk offline gaat.
+De bedoeling van de POC’s was dus niet om een volledig productieplatform te bouwen, maar om de technisch meest risicovolle beslissingen concreet te valideren."
 
 Slide 17 — VERVANGEN door live demo-slide
 Wat je zegt tijdens de live demo in Postman:
@@ -47,3 +67,27 @@ Nu de kerntest: we schakelen de User Management service volledig uit.
 De Catalog en de Validator blijven gewoon antwoorden met een geldig token. De authenticatieservice is offline maar het systeem werkt. Dat is het bewijs van onze architecturale beslissing.
 We zetten de service terug aan en tonen tot slot scenario zes: we passen de inhoud van ons eigen token aan om onszelf beheerdersrechten toe te kennen. Zonder de private sleutel klopt de handtekening niet meer. Alle services weigeren het token.
 Scenario zeven: we sturen meer dan vijf requests per minuut via de gateway. Vanaf de zesde request krijgen we een 429-fout terug. De gateway past rate limiting toe, wat beschermt tegen misbruik."
+
+Slide 18 - Risico's en onzekerheden
+"We wilden ook expliciet benoemen welke risico’s en onzekerheden nog aanwezig blijven binnen de architectuur.
+Het grootste risico blijft containerisolatie. Containers bieden sterke bescherming, maar geen absolute garantie. Een foutieve configuratie kan nog altijd problemen veroorzaken.
+Daarnaast brengt microservices ook extra complexiteit mee. Gedistribueerde systemen zijn moeilijker te debuggen, testen en beheren dan een klassieke monoliet.
+Ook asynchrone communicatie heeft gevolgen. Wanneer een message broker tijdelijk uitvalt, mogen berichten niet verloren gaan. Daarom gebruiken we durable queues en persistente opslag.
+Bij JWT-tokens blijft token-intrekking een gekende beperking. Een token blijft geldig tot zijn expiry bereikt is. Dat hebben we bewust aanvaard als trade-off tegenover extra complexiteit.
+We vonden het belangrijk om die beperkingen niet te verbergen, maar net expliciet te tonen en te motiveren."
+
+Slide 19 - Groeipad
+"De architectuur is bewust opgebouwd zodat het platform later verder kan uitbreiden zonder volledig herschreven te worden.
+Een eerste mogelijke uitbreiding is sterkere sandbox-isolatie via microVM’s zoals Firecracker.
+Daarnaast zou observability een belangrijke volgende stap zijn. In grotere microservices-omgevingen worden centrale logging, tracing en monitoring essentieel.
+Ook authenticatie kan later uitgebreid worden via een externe identity provider zoals Keycloak.
+Verder laat de architectuur toe om nieuwe challenge-types toe te voegen of sandbox-services onafhankelijk op te schalen tijdens piekmomenten zoals CTF-events.
+Omdat de service-grenzen duidelijk vastliggen, blijven zulke uitbreidingen beheersbaar zonder de volledige architectuur te moeten herwerken."
+
+Slide 20 - Besluit
+"De belangrijkste conclusie van dit project is dat de architectuur rechtstreeks voortvloeit uit de karakteristieken van het systeem.
+Omdat gebruikers echte exploits uitvoeren, werden security, fault tolerance en scalability de drie bepalende factoren.
+Die kwaliteiten vereisen dat vooral de sandbox-runtime volledig geïsoleerd, onafhankelijk schaalbaar en herstelbaar is.
+Dat is uiteindelijk de reden waarom we voor microservices gekozen hebben. Niet omdat het populair is, maar omdat geen enkele monolitische stijl deze eisen structureel kon garanderen.
+De ADR’s leggen vervolgens vast hoe we die keuzes concreet vertaald hebben naar communicatie, data ownership, sandbox-isolatie en authenticatie.
+De vier POC’s tonen tenslotte dat de moeilijkste onderdelen niet alleen theoretisch verdedigbaar zijn, maar ook technisch haalbaar binnen de beperkingen van dit project."
